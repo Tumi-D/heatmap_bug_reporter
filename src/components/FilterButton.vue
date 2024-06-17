@@ -19,7 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import type { ReturnData } from './FilterComponent.vue'
 
 // Define the props using defineProps

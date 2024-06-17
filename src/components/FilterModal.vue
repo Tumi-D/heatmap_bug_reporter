@@ -202,9 +202,7 @@
                       dropdownItems"
                       :key="condition"
                       class="dropdown_menu_item"
-                      :class="{
-                        activeClass: condition === selectedItem['default'],
-                      }"
+                      :class="{ activeClass: condition === item.default }"
                       @click="
                         selectItem(condition, 'default', item.index, data)
                       "
@@ -219,7 +217,7 @@
               <p class="dropdown_title">{{ SecondLabelMap(data?.name) }}</p>
               <div class="dropdown_body_wrapper">
                 <div
-                  v-if="actionValue?.options?.length"
+                  v-if="actionValue?.options?.length || tagOptions"
                   class="arrow_button_wrapper"
                   :class="{ we_have_error: item.valueError }"
                   @click="toggleDropdown('value', item.index)"
@@ -253,14 +251,21 @@
                 </p>
                 <transition name="dropdown">
                   <ul
-                    v-show="item.valueOpen && actionValue?.options?.length"
+                    v-show="
+                      item.valueOpen &&
+                      (actionValue?.options?.length || tagOptions)
+                    "
                     class="dropdown_menu_wrapper"
                   >
                     <li
-                      v-for="option in actionValue?.options"
+                      v-for="option in tagOptions || actionValue?.options"
                       :key="option"
                       class="dropdown_menu_item"
-                      :class="{ activeClass: option === selectedItem['value'] }"
+                      :class="{
+                        activeClass:
+                          String(item.value).split(', ').includes(option) ||
+                          option === item.value,
+                      }"
                       @click="selectItem(option, 'value', item.index, data)"
                     >
                       {{ option }}
@@ -438,7 +443,9 @@ const props = defineProps<{
 const emit = defineEmits(["item-selected"]);
 
 // const isDropdownOpen = ref({ default: false, action: false, value: false });
+const currentUrl = ref(window.location.href);
 const dropdownItems = ref(items);
+const tagOptions = ref<string[]>();
 const selectedItem = ref({ default: "", action: "", value: "" });
 const inputValue = ref<number | string>("");
 // const secondInputError = ref(false);
@@ -526,6 +533,19 @@ const selectItem = (
     allData.value = allData.value.map((data) =>
       data.index === index ? { ...data, [what]: item } : data
     );
+  } else if (props.data?.name === "Session Tag") {
+    const oldItems = allData.value.find((d) => d.index === index)?.value || "";
+    const items = oldItems + `${oldItems ? ", " : ""}${item}`;
+
+    allData.value = allData.value.map((data) =>
+      data.index === index
+        ? {
+            ...data,
+            [what]: what === "value" ? items : item,
+            segment: actionValue?.definition,
+          }
+        : data
+    );
   } else {
     allData.value = allData.value.map((data) =>
       data.index === index
@@ -574,6 +594,19 @@ switch (props.data?.name) {
   case "Average Order Value":
   case "Create Custom Filter":
     dropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    break;
+  case "Session Tag":
+    dropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    tagOptions.value = [
+      "menu item 1",
+      "menu item 2",
+      "menu item 3",
+      "menu item 4",
+      "menu item 5",
+      "menu item 6",
+      "menu item 7",
+      "menu item 8",
+    ];
     break;
   case "custom":
     break;
@@ -719,7 +752,6 @@ const addCustomFilter = (condition: "and" | "or") => {
 };
 
 const removeCustomFilter = (index: number) => {
-  console.log(index);
   allData.value = allData.value.filter((d) => d.index !== index);
 };
 
@@ -769,6 +801,7 @@ const labelMap = (inputType?: string) => {
     "Viewed Page": "Action URL",
     "Average Order Value": "Condition",
     "Create Custom Filter": "Condition",
+    "Session Tag": "Session Tag Name",
   };
   return map[inputType || ""];
 };
@@ -781,6 +814,7 @@ const placeholderMap = (inputType?: string) => {
     "Viewed Page": "Select",
     "Average Order Value": "Equals",
     "Create Custom Filter": "Equals",
+    "Session Tag": "Select",
   };
   return map[inputType || ""];
 };
@@ -792,6 +826,7 @@ const SecondLabelMap = (inputType?: string) => {
     "Total Pages Visited": "",
     "Average Order Value": "Value",
     "Create Custom Filter": "Value",
+    "Session Tag": "Tag Value",
   };
   return map[inputType || ""];
 };
@@ -803,20 +838,41 @@ const SecondPlaceholderMap = (inputType?: string) => {
     "Total Pages Visited": "",
     "Average Order Value": "0.00",
     "Create Custom Filter": "Enter value",
+    "Session Tag": "Multiselect",
   };
   return map[inputType || ""];
 };
 
-// https://early-release.heatmap.com/index.php?date=2024-06-03&module=API&format=json&method=API.getSuggestedValuesForSegment&segmentName=entryPageUrl&segment=&idSite=2011&period=month
+const getItemFromUrl = (item: string) => {
+  const parsedUrl = new URL(currentUrl.value);
+  const searchParams = new URLSearchParams(parsedUrl.search);
+  const hashParams = new URLSearchParams(parsedUrl.hash.slice(1));
+
+  return searchParams.get(item) || hashParams.get(item);
+};
+
 const fetchSegmentData = async () => {
+  console.log("called: ", props.data?.definition?.split("=="));
+  const [segmentName] = props.data?.definition?.split("==") || "";
+  const token = localStorage.getItem("heatUserId");
+
+  console.log("called: token: ", { segmentName, token });
+  console.log(
+    "idSite: ",
+    getItemFromUrl("idSite"),
+    "subcategory: ",
+    getItemFromUrl("subcategory")
+  );
+
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
 
   const raw = JSON.stringify({
     module: "API",
-    format: "json",
     method: "API.getSuggestedValuesForSegment",
-    segmentName: "entryPageUrl",
+    segmentName: segmentName,
+    idSite: getItemFromUrl("idSite"),
+    idSiteHsr: getItemFromUrl("subcategory"),
   });
 
   const requestOptions: CustomRequestInit = {
@@ -825,7 +881,7 @@ const fetchSegmentData = async () => {
     body: raw,
     redirect: "follow",
   };
-  fetch("https://early-release.heatmap.com/index.php", requestOptions)
+  fetch("/index.php", requestOptions)
     .then((response) => response.json())
     .then((result) => {
       if (!result) {

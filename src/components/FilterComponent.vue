@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineProps, defineEmits, onMounted } from "vue";
+import { ref, computed, watch, defineEmits, onMounted } from "vue";
 import flightLand from "../assets/images/flight_land.svg";
 import trackChanges from "../assets/images/track_changes.svg";
 import numbers from "../assets/images/numbers.svg";
@@ -222,6 +222,14 @@ const sessionData: SessionDataItem[] = [
     name: "Traffic Source",
     title: "QuickFilter-TrafficSource",
     notDone: true,
+  },
+  {
+    definition: "sessionTagName==;sessionTagValue==",
+    iconSrc: flightLand,
+    idsegment: 0,
+    name: "Session Tag",
+    title: "QuickFilter-SessionTag",
+    showSign: true,
   },
   {
     definition: "visitCount==",
