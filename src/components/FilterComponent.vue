@@ -166,7 +166,6 @@ import groupAdd from "../assets/images/group_add.svg";
 import sentimentExtremelyDissatisfied from "../assets/images/sentiment_extremely_dissatisfied.svg";
 import addShoppingCart from "../assets/images/add_shopping_cart.svg";
 import payments from "../assets/images/payments.svg";
-
 import FilterModal from "./FilterModal.vue";
 
 interface SessionDataItem {

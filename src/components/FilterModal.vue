@@ -5,6 +5,9 @@
     @click="handleClickOutside"
   >
     <div class="filter_wrapper" @click.stop>
+      <div v-if="loading" class="loader_wrapper">
+        <LoadingSpinner />
+      </div>
       <header class="filter_header">
         <div class="filter_header_left">
           <img
@@ -366,6 +369,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import ArrowSvg from "./icons/ArrowSvg.vue";
 import CloseSvg from "./icons/CloseSvg.vue";
 import question from "../assets/images/question.svg";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 import { _data, segmentValues } from "./data";
 
@@ -394,10 +398,6 @@ type allData = {
   segment?: string | null;
 };
 
-interface CustomRequestInit extends RequestInit {
-  redirect: RequestRedirect;
-}
-
 const options = {
   number: {
     "==": "Equal To",
@@ -424,16 +424,7 @@ const conditions = {
   Contains: "&&",
 };
 
-const items = [
-  "menu item 1",
-  "menu item 2",
-  "menu item 3",
-  "menu item 4",
-  "menu item 5",
-  "menu item 6",
-  "menu item 7",
-  "menu item 8",
-];
+const items: string[] = [];
 
 const props = defineProps<{
   closeSelectModal: () => void;
@@ -852,11 +843,12 @@ const getItemFromUrl = (item: string) => {
 };
 
 const fetchSegmentData = async () => {
+  loading.value = true;
   console.log("called: ", props.data?.definition?.split("=="));
   const [segmentName] = props.data?.definition?.split("==") || "";
-  const token = localStorage.getItem("heatUserId");
+  // const token = localStorage.getItem("heatUserId");
 
-  console.log("called: token: ", { segmentName, token });
+  console.log("called: token: ", { segmentName });
   console.log(
     "idSite: ",
     getItemFromUrl("idSite"),
@@ -864,30 +856,20 @@ const fetchSegmentData = async () => {
     getItemFromUrl("subcategory")
   );
 
-  const myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
+  const url = `/index.php?idSite=${getItemFromUrl(
+    "idSite"
+  )}&idSiteHsr=${getItemFromUrl(
+    "subcategory"
+  )}&method=API.getSuggestedValuesForSegment&module=API&segmentName=${segmentName}`;
 
-  const raw = JSON.stringify({
-    module: "API",
-    method: "API.getSuggestedValuesForSegment",
-    segmentName: segmentName,
-    idSite: getItemFromUrl("idSite"),
-    idSiteHsr: getItemFromUrl("subcategory"),
-  });
-
-  const requestOptions: CustomRequestInit = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-  };
-  fetch("/index.php", requestOptions)
+  fetch(url)
     .then((response) => response.json())
     .then((result) => {
       if (!result) {
         loading.value = false;
         return;
       }
+      dropdownItems.value = result;
       console.log(result);
       loading.value = false;
     })
@@ -897,9 +879,21 @@ const fetchSegmentData = async () => {
     });
 };
 
+const makeRequestFor = (filter?: string): boolean => {
+  const allowRequestList = [
+    "Entry Page",
+    "Traffic Source",
+    "Session Tag",
+    "Viewed Page",
+  ];
+  return filter ? allowRequestList.includes(filter) : false;
+};
+
 onMounted(() => {
   document.addEventListener("click", handleDocumentClick);
-  fetchSegmentData();
+  if (makeRequestFor(props.data?.name)) {
+    fetchSegmentData();
+  }
 });
 
 onBeforeUnmount(() => {
@@ -979,6 +973,7 @@ input:target {
   }
 
   .filter_wrapper {
+    position: relative;
     display: flex;
     min-width: 425px;
     flex-direction: column;
@@ -1422,5 +1417,20 @@ input:target {
 
 #inner_arrow {
   margin-right: 2px;
+}
+
+.loader_wrapper {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100%);
+  top: 0;
+  left: 0;
+  z-index: 999;
+  pointer-events: none;
+  background-color: #67707811;
+  /* transform: translate(-50%, -50%); */
 }
 </style>
