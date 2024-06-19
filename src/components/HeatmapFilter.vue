@@ -21,7 +21,6 @@ import FilterComponent from "./FilterComponent.vue";
 import FilterButton from "./FilterButton.vue";
 import { ReturnData } from "./FilterComponent.vue";
 
-
 const filteredValues = ref<ReturnData[]>();
 const showFilterMenu = ref(false);
 const emit = defineEmits<{
@@ -33,7 +32,7 @@ const filterWrapper = ref<HTMLElement | null>(null);
 
 function onFilterValuesChange(values: ReturnData[]) {
   console.log(values);
-  filteredValues.value = values;
+  filteredValues.value = values.length > 0 ? values : undefined;
   emit("on-filter-values-change", values);
 }
 

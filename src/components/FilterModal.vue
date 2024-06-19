@@ -38,7 +38,6 @@
                 v-model="filterName"
                 @input="validateFilterName"
               />
-              <!-- <div class="absolute_placehopder">$</div> -->
               <p v-if="filterNameError" class="error_message">
                 {{ filterNameErrorMessage }}
               </p>
@@ -46,39 +45,6 @@
             <div class="horizontal_line" />
           </div>
           <template v-for="(item, index) in allData" :key="item.index">
-            <!-- <div
-              v-if="data?.name === 'Create Custom Filter' && index"
-              class="remove_custom_filter"
-            >
-              <div
-                class="remove_custom"
-                @click="removeCustomFilter(item.index)"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                >
-                  <path
-                    d="M9 3L3 9"
-                    stroke="#B71E2D"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M3 3L9 9"
-                    stroke="#B71E2D"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <p>Remove Filter</p>
-              </div>
-            </div> -->
             <div v-if="index" class="condition_indicator">
               <div class="condition">
                 <div>{{ item.condition }}</div>
@@ -239,7 +205,6 @@
                   "
                   :placeholder="SecondPlaceholderMap(data?.name)"
                   v-model="item.value"
-                  @input="validateInput"
                   @blur="handleBlur()"
                   @focus="openDropdown('value', item.index)"
                 />
@@ -351,7 +316,7 @@
           </div>
           <div
             class="footer_button primary_button"
-            :class="{ disabled_me: Boolean(!selectedItem.default) }"
+            :class="{ disabled_me: false }"
             @click="next"
           >
             <p class="footer_button_text">
@@ -370,32 +335,14 @@ import ArrowSvg from "./icons/ArrowSvg.vue";
 import CloseSvg from "./icons/CloseSvg.vue";
 import question from "../assets/images/question.svg";
 import LoadingSpinner from "./LoadingSpinner.vue";
+import validator from "./validator";
 
 import { _data, segmentValues } from "./data";
 
-import { type CombinedFilter } from "./FilterComponent.vue";
-import { type DataItem } from "./@types";
+import { type DataItem, type AllData, type CombinedFilter } from "./@types";
 
 type GroupedData = {
   [category: string]: DataItem[];
-};
-
-type allData = {
-  condition: "and" | "or";
-  index: number;
-  action: string;
-  default: string;
-  value: string | number;
-  actionError: boolean;
-  actionErrorMsg: string;
-  conditionError: boolean;
-  conditionErrorMsg: string;
-  valueError: boolean;
-  valueErrorMsg: string;
-  actionOpen: boolean;
-  defaultOpen: boolean;
-  valueOpen: boolean;
-  segment?: string | null;
 };
 
 const options = {
@@ -436,21 +383,16 @@ const emit = defineEmits(["item-selected"]);
 // const isDropdownOpen = ref({ default: false, action: false, value: false });
 const currentUrl = ref(window.location.href);
 const dropdownItems = ref(items);
+const sectionTags = ref({});
 const tagOptions = ref<string[]>();
 const selectedItem = ref({ default: "", action: "", value: "" });
 const inputValue = ref<number | string>("");
-// const secondInputError = ref(false);
-// const secondInputErrorMessage = ref("");
 const filterName = ref<string>();
 const filterNameError = ref(false);
 const filterNameErrorMessage = ref("");
 const loading = ref<boolean>(false);
-// const actionInputError = ref(false);
-// const actionInputErrorMessage = ref("");
-// const defaultInputError = ref(false);
-// const defaultInputErrorMessage = ref("");
 const actionValue = ref<DataItem>();
-const allData = ref<allData[]>([
+const allData = ref<AllData[]>([
   {
     condition: "and",
     index: 0,
@@ -526,7 +468,16 @@ const selectItem = (
     );
   } else if (props.data?.name === "Session Tag") {
     const oldItems = allData.value.find((d) => d.index === index)?.value || "";
-    const items = oldItems + `${oldItems ? ", " : ""}${item}`;
+    const alreadySelected = String(oldItems).split(", ").includes(item);
+    let items = "";
+    if (!alreadySelected) {
+      items = oldItems + `${oldItems ? ", " : ""}${item}`;
+    } else {
+      items = String(oldItems)
+        .split(", ")
+        .filter((i) => i !== item)
+        .join(", ");
+    }
 
     allData.value = allData.value.map((data) =>
       data.index === index
@@ -537,6 +488,9 @@ const selectItem = (
           }
         : data
     );
+    if (what === "default") {
+      tagOptions.value = (sectionTags.value as any)[item] || [];
+    }
   } else {
     allData.value = allData.value.map((data) =>
       data.index === index
@@ -552,10 +506,8 @@ const selectItem = (
   }
   if (what === "value") {
     inputValue.value = item;
-    validateInput();
   }
   closeDropdown();
-  validateDefaultInput();
 };
 
 const innerItemSelected = (item: DataItem, index: number) => {
@@ -569,8 +521,6 @@ const innerItemSelected = (item: DataItem, index: number) => {
   actionValue.value = item;
   selectedItem.value["action"] = item.name;
   closeDropdown();
-  // console.log(actionValue.value);
-  validateActionInput();
 };
 
 const cancel = () => {
@@ -588,16 +538,7 @@ switch (props.data?.name) {
     break;
   case "Session Tag":
     dropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
-    tagOptions.value = [
-      "menu item 1",
-      "menu item 2",
-      "menu item 3",
-      "menu item 4",
-      "menu item 5",
-      "menu item 6",
-      "menu item 7",
-      "menu item 8",
-    ];
+    tagOptions.value = [];
     break;
   case "custom":
     break;
@@ -606,17 +547,20 @@ switch (props.data?.name) {
 }
 
 const next = () => {
-  validateDefaultInput();
-  // console.log(allData.value);
+  const validName = validateFilterName();
+  if (props.data?.name === "Create Custom Filter") {
+    if (validName) return;
+  }
+  const valid = validator(allData.value, props.data);
+  if (!valid) return;
 
   if (props.data?.name === "Create Custom Filter") {
-    validateActionInput();
     const returnData = allData.value
       .map(
         (data) =>
           data.segment +
           conditions[data.default as keyof typeof conditions] +
-          encodeURI(String(data.value))
+          data.value
       )
       .join(";");
     // console.log({ name: filterName.value, definition: returnData });
@@ -634,18 +578,28 @@ const next = () => {
           (data) =>
             data.segment +
             conditions[data.default as keyof typeof conditions] +
-            encodeURI(String(data.value))
+            data.value
         )
         .join(";");
       // console.log({ name: props.data?.name, definition: returnData });
+    }
+    if (props.data?.name === "Session Tag") {
+      const currentData = allData.value[0];
+      const [segmentName, segmentValue] = currentData.segment?.split(
+        ";"
+      ) as string[];
+
+      returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
     } else {
       returnData = allData.value
-        .map((data) => data.segment + encodeURI(String(data.default)))
+        .map((data) => (data.segment || props.data?.definition) + data.default)
         .join(";");
-      // console.log({ name: props.data?.name, definition: returnData });
     }
 
-    emit("item-selected", { name: props.data?.name, definition: returnData });
+    emit("item-selected", {
+      name: props.data?.name,
+      definition: encodeURI(returnData),
+    });
   }
   props.closeSelectModal();
 };
@@ -678,14 +632,6 @@ const numberInput = (filter?: string) => {
   return filter === "Total Pages Visited";
 };
 
-const validateInput = () => {
-  // secondInputError.value = String(inputValue.value).trim() === "";
-  // if (typeof inputValue.value === "string" && inputValue.value.trim() === "") {
-  //   secondInputErrorMessage.value = "Invalid input: Missing input";
-  // }
-  // secondInputErrorMessage.value = "Invalid input: Please enter a numeric value";
-};
-
 const validateFilterName = () => {
   filterNameError.value = (filterName.value?.length || 0) < 3;
   if (filterName?.value?.trim() === "") {
@@ -698,27 +644,12 @@ const validateFilterName = () => {
     filterNameErrorMessage.value =
       "Invalid input: Filter name cannot exceed 50 characters.";
   }
-};
-
-const validateActionInput = () => {
-  // actionInputError.value = selectedItem.value.action.trim().length === 0;
-  // actionInputErrorMessage.value =
-  //   "Invalid input: Please select an action first";
-};
-
-const validateDefaultInput = () => {
-  // defaultInputError.value = selectedItem.value.default.trim().length === 0;
-  // defaultInputErrorMessage.value =
-  //   "Invalid input: Please select an action first";
-  // defaultInputErrorMessage.value =
-  //   "Invalid input: Please enter a numeric value";
+  return (filterName.value?.length || 0) < 3;
 };
 
 const addCustomFilter = (condition: "and" | "or") => {
-  validateActionInput();
-  validateDefaultInput();
-  validateInput();
-  validateFilterName();
+  const valid = validateFilterName();
+  if (valid) return;
 
   const index = allData.value[allData.value.length - 1].index + 1;
   allData.value = [
@@ -844,17 +775,8 @@ const getItemFromUrl = (item: string) => {
 
 const fetchSegmentData = async () => {
   loading.value = true;
-  console.log("called: ", props.data?.definition?.split("=="));
   const [segmentName] = props.data?.definition?.split("==") || "";
   // const token = localStorage.getItem("heatUserId");
-
-  console.log("called: token: ", { segmentName });
-  console.log(
-    "idSite: ",
-    getItemFromUrl("idSite"),
-    "subcategory: ",
-    getItemFromUrl("subcategory")
-  );
 
   const url = `/index.php?idSite=${getItemFromUrl(
     "idSite"
@@ -869,8 +791,13 @@ const fetchSegmentData = async () => {
         loading.value = false;
         return;
       }
-      dropdownItems.value = result;
-      console.log(result);
+      if (props.data?.name === "Session Tag") {
+        sectionTags.value = result;
+        dropdownItems.value = Object.keys(result);
+      } else {
+        dropdownItems.value = result;
+      }
+      // console.log(result);
       loading.value = false;
     })
     .catch((error) => {
@@ -898,10 +825,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleDocumentClick);
-});
-
-watch(inputValue, () => {
-  validateInput();
 });
 
 watch(filterName, () => {
@@ -1154,6 +1077,8 @@ input:target {
             margin-top: 4px;
             max-height: 300px;
             overflow-y: auto;
+            overflow-x: hidden;
+            /* scrollbar-gutter: stable both-edges; */
             z-index: 10;
             /* transition: all 3s ease-in-out; */
 

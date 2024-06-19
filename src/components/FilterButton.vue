@@ -1,6 +1,12 @@
 <template>
   <div class="main_filter_button" @click="onShowFilterMenu()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
       <path
         d="M6.59922 12H17.3992M4.19922 7.19995H19.7992M10.1992 16.8H13.7992"
         stroke="#4D5861"
@@ -11,18 +17,25 @@
     </svg>
     <p v-if="!filteredValues" class="main_filter_button_text">Add Filter</p>
     <div v-else class="selected_filters">
-      <div v-for="filter in filteredValues" :key="filter.name" class="selected_filter">
-        <p class="selected_filter_text">{{ filter.name }}</p>
+      <div
+        v-for="filter in filteredValues"
+        :key="filter.name"
+        class="selected_filter"
+      >
+        <p v-if="filter.name" class="selected_filter_text">
+          {{ filter.name }}
+        </p>
+        <p v-else class="selected_filter_text">Add Filter</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ReturnData } from './FilterComponent.vue'
+import type { ReturnData } from "./FilterComponent.vue";
 
 // Define the props using defineProps
-defineProps<{ filteredValues?: ReturnData[]; onShowFilterMenu: () => void }>()
+defineProps<{ filteredValues?: ReturnData[]; onShowFilterMenu: () => void }>();
 </script>
 
 <style scoped>

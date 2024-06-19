@@ -143,7 +143,7 @@
           </div>
           <div
             class="right_button new_color"
-            :class="{ disabled_me: !disableCompareButton }"
+            :class="{ disabled_me: !disableCompareButton && !resetClicked }"
           >
             <p class="right_button_text" @click="onCompare">
               {{ !canApply ? "Apply" : "Compare" }}
@@ -167,29 +167,8 @@ import sentimentExtremelyDissatisfied from "../assets/images/sentiment_extremely
 import addShoppingCart from "../assets/images/add_shopping_cart.svg";
 import payments from "../assets/images/payments.svg";
 import FilterModal from "./FilterModal.vue";
+import { CombinedFilter, ECommerceDataItem, SessionDataItem } from "./@types";
 
-interface SessionDataItem {
-  definition: string;
-  iconSrc: string; // Assuming iconSrc is a URL string
-  idsegment: number;
-  name: string;
-  title: string;
-  notDone?: boolean; // Optional property
-  isDefinitionValueSet?: boolean; // Optional property
-  showSign?: boolean; // Optional property
-}
-
-interface ECommerceDataItem {
-  definition: string;
-  iconSrc: string; // Assuming iconSrc is a URL string or a string identifier for an icon
-  idsegment: number;
-  name: string;
-  title: string;
-  isDefinitionValueSet?: boolean; // Optional property
-  showSign?: boolean; // Optional property
-}
-
-export type CombinedFilter = SessionDataItem | ECommerceDataItem;
 type SelectIndicators = {
   active?: CombinedFilter;
   pendingList: CombinedFilter[];
@@ -306,7 +285,7 @@ const selectIndicators = ref<SelectIndicators>({
 
 const showSelectModal = ref(false);
 const modalData = ref<CombinedFilter>();
-
+const resetClicked = ref(false);
 const defaultSelections = ref<ReturnData[]>();
 
 function getImagePath(filename: string) {
@@ -367,7 +346,10 @@ function resetAllFilters(click?: boolean) {
   selectIndicators.value.active = undefined;
   selectIndicators.value.pendingList = [];
   defaultSelections.value = [];
-  if (click) emit("reset-all-filters");
+  if (click) {
+    resetClicked.value = true;
+    emit("reset-all-filters");
+  }
 }
 
 function disableButton(button: string) {
@@ -420,10 +402,10 @@ function onItemSelected(
   }
 
   if (modalData.value) {
-    const definition = modalData.value.definition;
+    // const definition = modalData.value.definition;
     modalData.value = {
       ...modalData.value,
-      definition: `${definition}${item.definition}`,
+      definition: `${item.definition}`,
     };
     selectIndicators.value.active = modalData.value;
     if (selectIndicators.value.pendingList.length === 1 && !custom) {
@@ -433,6 +415,7 @@ function onItemSelected(
 }
 
 function onCompare() {
+  if (!disableCompareButton.value && !resetClicked.value) return;
   if (
     selectIndicators.value.pendingList.length === 0 &&
     selectIndicators.value.active?.name
@@ -457,6 +440,7 @@ watch(
 );
 
 onMounted(() => {
+  resetAllFilters();
   const savedFilters = localStorage.getItem("heatmap-custom-filters");
   if (savedFilters) customData.value = JSON.parse(savedFilters);
 
