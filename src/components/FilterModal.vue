@@ -68,6 +68,7 @@
                 </div>
                 <input
                   class="dropdown_body"
+                  :class="{ has_arrow: noDropdown(data?.name) }"
                   :type="'text'"
                   :placeholder="'Select'"
                   @focus="openDropdown('action', item.index)"
@@ -90,9 +91,7 @@
                       <label
                         :for="String(category) + item.index"
                         class="dropdown_menu_item action"
-                        :class="{
-                          activeClass: category === selectedItem['action'],
-                        }"
+                        :class="{ activeClass: category === item.action }"
                       >
                         <p>
                           {{ category }}
@@ -151,6 +150,7 @@
                 </div>
                 <input
                   class="dropdown_body"
+                  :class="{ has_arrow: noDropdown(data?.name) }"
                   :type="numberInput(data?.name) ? 'number' : 'text'"
                   :placeholder="placeholderMap(data?.name)"
                   @blur="handleBlur()"
@@ -195,7 +195,10 @@
                 </div>
                 <input
                   class="dropdown_body"
-                  :class="{ second_one: data?.name === 'Average Order Value' }"
+                  :class="{
+                    second_one: data?.name === 'Average Order Value',
+                    has_arrow: actionValue?.options?.length || tagOptions,
+                  }"
                   :type="
                     actionValue?.options?.length
                       ? 'text'
@@ -371,7 +374,89 @@ const conditions = {
   Contains: "&&",
 };
 
-const items: string[] = [];
+const items: string[] = [
+  "https://thejellybee.com/pages/landing-page",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies",
+  "https://thejellybee.com",
+  "https://thejellybee.com/pages/main-lp",
+  "https://thejellybee.com/pages/report-page",
+  "https://thejellybee.com/pages/collagen-gummies",
+  "https://thejellybee.com/products/turmeric-ginger-gummies",
+  "https://thejellybee.com/pages/joint-support-bundle",
+  "https://thejellybee.com/pages/apple-cider-vinegar-gummies",
+  "https://thejellybee.com/pages/report-page-v2",
+  "https://thejellybee.com/products/collagen-gummies",
+  "https://thejellybee.com/pages/reviews",
+  "https://thejellybee.com/cart",
+  "https://thejellybee.com/policies/privacy-policy",
+  "https://thejellybee.com/policies/shipping-policy",
+  "https://thejellybee.com/collections/jellybee-products",
+  "https://thejellybee.com/products/turmeric-ginger-30",
+  "https://thejellybee.com/policies/terms-of-service",
+  "https://thejellybee.com/a/track",
+  "https://thejellybee.com/products/collagen-gummies-buy-2-get-1-free-1",
+  "file://c:/users/15406/desktop/5+reasons+why+you+need+to+try+autobrush.html",
+  "https://thejellybee.com/pages/quiz-1",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies-landing-page",
+  "https://thejellybee.com/pages/turmeric-offer-page7",
+  "https://thejellybee.com/products/black-friday-deal-collagen-gummies-buy-2-get-1-free",
+  "https://thejellybee.com/pages/turmeric-offer-page6",
+  "https://checkout.thejellybee.com/products/hibiscus",
+  "https://thejellybee.com/collections/all-1/products/collagen-gummies-buy-2-get-1-free-1",
+  "file://c:/users/luk_h/desktop/isbn+&+barcode+from+$22.99+-+authorized+us+isbn+agency+-+isbn+services.html",
+  "https://thejellybee.com/pages/bf2021-subscribe-page",
+  "https://thejellybee.com/pages/turmeric-offer-page5",
+  "https://thejellybee.com/pages/thejellybeesave20-subscribe-page",
+  "https://thejellybee.com/pages/vipbf2021-subscribe-page",
+  "https://thejellybee.com/pages/vip-black-friday-2021",
+  "https://thejellybee.com/collections/best-sellers/products/turmeric-ginger-gummies",
+  "https://thejellybee.com/account",
+  "https://thejellybee.com/collections/all/products/habits-that-relieve-stress-and-promote-harmony-in-your-life-ebook",
+  "https://thejellybee.com/collections/all/products/joint-health-101",
+  "https://thejellybee.com/products/turmeric-ginger-gummies-copy",
+  "https://thejellybee.com/collections/all-1/products/collagen-gummies-buy-2-get-1-free",
+  "https://thejellybee.com/collections/all/products/copy-of-turmeric-ginger-gummies-buy-2-get-1-free-1",
+  "https://thejellybee.com/pages/ashwagandha-gummies",
+  "https://thejellybee.com/pages/wholesale",
+  "https://thejellybee.com/products/jellybee-gift-card",
+  "https://thejellybee.com/pages/weekly",
+  "https://thejellybee.com/products/joint-support-bundle",
+  "https://thejellybee.com/products/copy-of-turmeric-ginger-gummies-buy-2-get-1-free",
+  "https://thejellybee.com/products/turmeric-ginger-gummies-buy-2-get-1-free",
+  "https://thejellybee.com/collections/all",
+  "https://thejellybee.com/apps/alchemy/element/preview",
+  "https://thejellybee.com/collections/all-1",
+  "https://thejellybee.com/pages/new-homepage",
+  "https://thejellybee.com/blogs/news",
+  "https://thejellybee.com/collections/jellybee-products/products/apple-cider-vinegar-gummies",
+  "https://thejellybee.com/pages/collagen-gummies-landing-page",
+  "https://thejellybee.com/challenge",
+  "https://thejellybee.com/collections/jellybee-products/products/joint-support-bundle",
+  "https://thejellybee.com/products/turmeric-ginger-gummies-20-off",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies)",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies-members-only",
+  "https://thejellybee.com/collections/best-sellers/products/turmeric-ginger-gummies",
+  "https://thejellybee.com/pages/copy-of-turmeric-ginger-gummies-28-04-2022",
+  "https://thejellybee.com/products/habits-that-relieve-stress-and-promote-harmony-in-your-life-ebook",
+  "https://thejellybee.com/pages/google-turmeric-ginger",
+  "https://thejellybee.com/products/turmeric-ginger-gummies-1",
+  "https://thejellybee.com/products/apple-cider-vinegar-gummies-so",
+  "https://thejellybee.com/pages/thejellybee",
+  "https://thejellybee.com/pages/5buckvoucher-subscribe-page",
+  "https://thejellybee.com/pages/quiz",
+  "https://thejellybee.com/shop",
+  "https://thejellybee.com/pages/free-turmeric-ginger-gummies",
+  "https://thejellybee.com/wpm@09be7fcfwb73c60f6p448fb3aema43d3ce0/web-pixel-21954725@6/sandbox/modern",
+  "https://thejellybee.com/pages/salespage19",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies-subscription",
+  "https://thejellybee.com/wpm@09be7fcfwb73c60f6p448fb3aema43d3ce0/web-pixel-21954725@9/sandbox/modern",
+  "https://thejellybee.com/pages/turmeric-ginger-gummies-single-bottles",
+  "https://thejellybee.com/pages/turmeric-offer-page3",
+  "https://thejellybee.com/pages/turmeric-ginger-new",
+  "https://thejellybee.com/pages/quiz-test",
+  "https://thejellybee.com/pages/collagen-offer-page1",
+  "https://thejellybee.com/pages/winyearlysupply-subscribe-page",
+];
 
 const props = defineProps<{
   closeSelectModal: () => void;
@@ -382,10 +467,10 @@ const emit = defineEmits(["item-selected"]);
 
 // const isDropdownOpen = ref({ default: false, action: false, value: false });
 const currentUrl = ref(window.location.href);
-const dropdownItems = ref(items);
+const allDropdownItems = ref(items);
+const dropdownItems = ref(allDropdownItems.value);
 const sectionTags = ref({});
 const tagOptions = ref<string[]>();
-const selectedItem = ref({ default: "", action: "", value: "" });
 const inputValue = ref<number | string>("");
 const filterName = ref<string>();
 const filterNameError = ref(false);
@@ -396,9 +481,9 @@ const allData = ref<AllData[]>([
   {
     condition: "and",
     index: 0,
-    action: selectedItem.value.action,
-    default: selectedItem.value.default,
-    value: selectedItem.value.value,
+    action: "",
+    default: "",
+    value: "",
     actionError: false,
     actionErrorMsg: "",
     conditionError: false,
@@ -499,11 +584,6 @@ const selectItem = (
     );
   }
 
-  if (inputValue.value) {
-    selectedItem.value[what] = `${inputValue.value}`;
-  } else {
-    selectedItem.value[what] = item;
-  }
   if (what === "value") {
     inputValue.value = item;
   }
@@ -517,9 +597,7 @@ const innerItemSelected = (item: DataItem, index: number) => {
       : data
   );
 
-  selectedItem.value.default = "";
   actionValue.value = item;
-  selectedItem.value["action"] = item.name;
   closeDropdown();
 };
 
@@ -534,10 +612,12 @@ const getImagePath = (filename: string) => {
 switch (props.data?.name) {
   case "Average Order Value":
   case "Create Custom Filter":
-    dropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    allDropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    dropdownItems.value = allDropdownItems.value;
     break;
   case "Session Tag":
-    dropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    allDropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
   case "custom":
@@ -570,6 +650,8 @@ const next = () => {
       { name: filterName.value, definition: returnData },
       true
     );
+    props.closeSelectModal();
+    return;
   } else {
     let returnData = "";
     if (props.data?.name === "Average Order Value") {
@@ -581,7 +663,12 @@ const next = () => {
             data.value
         )
         .join(";");
-      // console.log({ name: props.data?.name, definition: returnData });
+      emit("item-selected", {
+        name: props.data?.name,
+        definition: encodeURI(returnData),
+      });
+      props.closeSelectModal();
+      return;
     }
     if (props.data?.name === "Session Tag") {
       const currentData = allData.value[0];
@@ -590,18 +677,24 @@ const next = () => {
       ) as string[];
 
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
+      emit("item-selected", {
+        name: props.data?.name,
+        definition: encodeURI(returnData),
+      });
+      props.closeSelectModal();
+      return;
     } else {
       returnData = allData.value
         .map((data) => (data.segment || props.data?.definition) + data.default)
         .join(";");
+      emit("item-selected", {
+        name: props.data?.name,
+        definition: encodeURI(returnData),
+      });
+      props.closeSelectModal();
+      return;
     }
-
-    emit("item-selected", {
-      name: props.data?.name,
-      definition: encodeURI(returnData),
-    });
   }
-  props.closeSelectModal();
 };
 
 const handleDocumentClick = (event: MouseEvent) => {
@@ -617,8 +710,11 @@ const handleDocumentClick = (event: MouseEvent) => {
 };
 
 const filterItems = (what: "default" | "action" | "value", index: number) => {
-  const searchText = selectedItem.value[what].toLowerCase();
-  dropdownItems.value = items.filter((item) =>
+  const searchText = (allData.value.find((d) => d.index === index) as any)?.[
+    what
+  ]?.toLowerCase();
+
+  dropdownItems.value = allDropdownItems.value.filter((item) =>
     item.toLowerCase().includes(searchText)
   );
   openDropdown(what, index);
@@ -1046,6 +1142,11 @@ input:target {
             margin: 0;
             height: 30px;
 
+            &.has_arrow {
+              padding-right: 36px;
+              width: calc(100% - 50px);
+            }
+
             color: var(--Grey-800, #34404b);
             font-size: 16px;
             font-style: normal;
@@ -1088,6 +1189,7 @@ input:target {
               align-items: flex-start;
               align-self: stretch;
               cursor: pointer;
+              white-space: pre-wrap !important;
 
               &.action {
                 display: flex;
