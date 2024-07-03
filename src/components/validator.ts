@@ -15,11 +15,11 @@ export default function validator(
     valid = !!data[0].default;
     data[0].conditionError = !valid;
     if (!valid) {
-      data[0].conditionErrorMsg = "Referrer URL is requires";
+      data[0].conditionErrorMsg = "Referrer URL is Required";
       if (props?.name === "Total Pages Visited")
         data[0].conditionErrorMsg = "Please enter Number of visits (number)";
       if (props?.name === "Viewed Page")
-        data[0].conditionErrorMsg = "Action URL is requires";
+        data[0].conditionErrorMsg = "Action URL is Required";
     } else {
       data[0].conditionErrorMsg = "";
     }

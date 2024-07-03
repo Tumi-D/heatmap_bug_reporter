@@ -83,6 +83,7 @@
                     id="accordion"
                     v-show="item.actionOpen && noDropdown(data?.name)"
                     class="dropdown_menu_wrapper"
+                    :class="{ align_center: touchingBottom }"
                   >
                     <li
                       v-for="(itemsToLoop, category) in actionItems"
@@ -165,6 +166,7 @@
                   <ul
                     v-show="item.defaultOpen && noDropdown(data?.name)"
                     class="dropdown_menu_wrapper"
+                    :class="{ align_center: touchingBottom }"
                   >
                     <li
                       v-for="condition in actionValue?.conditions ||
@@ -214,6 +216,7 @@
                 <div
                   v-if="data?.name === 'Average Order Value'"
                   class="absolute_placehopder"
+                  :class="{ align_center: touchingBottom }"
                 >
                   $
                 </div>
@@ -227,6 +230,7 @@
                       (actionValue?.options?.length || tagOptions)
                     "
                     class="dropdown_menu_wrapper"
+                    :class="{ align_center: touchingBottom }"
                   >
                     <li
                       v-for="option in tagOptions || actionValue?.options"
@@ -469,7 +473,14 @@ const emit = defineEmits(["item-selected"]);
 const currentUrl = ref(window.location.href);
 const allDropdownItems = ref(items);
 const dropdownItems = ref(allDropdownItems.value);
-const sectionTags = ref({});
+const sectionTags = ref({
+  variant: [],
+  utm_source: ["klarna", "Meta-SiteLink-179-0"],
+  utm_medium: ["paid", "referral"],
+  utm_content: ["120210339826690110"],
+  utm_term: ["120210339583610110"],
+  utm_campaign: ["120203706182330110", "klarna-merchantboost"],
+});
 const tagOptions = ref<string[]>();
 const inputValue = ref<number | string>("");
 const filterName = ref<string>();
@@ -477,6 +488,7 @@ const filterNameError = ref(false);
 const filterNameErrorMessage = ref("");
 const loading = ref<boolean>(false);
 const actionValue = ref<DataItem>();
+const touchingBottom = ref(false);
 const allData = ref<AllData[]>([
   {
     condition: "and",
@@ -496,6 +508,18 @@ const allData = ref<AllData[]>([
   },
 ]);
 
+const isElementTouchingBottom = (
+  selector: string,
+  threshold: number = 5
+): boolean => {
+  const element = document.querySelector(selector);
+  if (!element) return false;
+  const rect = element.getBoundingClientRect();
+  const windowHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+  return windowHeight - rect.bottom <= threshold;
+};
+
 const fieldToUpdate = (what: "default" | "action" | "value") =>
   what === "action"
     ? "actionOpen"
@@ -513,6 +537,11 @@ const toggleDropdown = (
       ? { ...data, [fieldToUpdate(what)]: !data[fieldToUpdate(what)] }
       : data
   );
+
+  setTimeout(() => {
+    touchingBottom.value = isElementTouchingBottom(".dropdown_menu_wrapper", 5);
+    console.log(touchingBottom.value);
+  }, 10);
 };
 
 const openDropdown = (what: "default" | "action" | "value", index: number) => {
@@ -520,6 +549,10 @@ const openDropdown = (what: "default" | "action" | "value", index: number) => {
   allData.value = allData.value.map((data) =>
     data.index === index ? { ...data, [fieldToUpdate(what)]: true } : data
   );
+  setTimeout(() => {
+    touchingBottom.value = isElementTouchingBottom(".dropdown_menu_wrapper", 5);
+    console.log(touchingBottom.value);
+  }, 10);
 };
 
 const closeDropdown = () => {
@@ -575,6 +608,7 @@ const selectItem = (
     );
     if (what === "default") {
       tagOptions.value = (sectionTags.value as any)[item] || [];
+      allData.value[0].value = "";
     }
   } else {
     allData.value = allData.value.map((data) =>
@@ -616,7 +650,7 @@ switch (props.data?.name) {
     dropdownItems.value = allDropdownItems.value;
     break;
   case "Session Tag":
-    allDropdownItems.value = ["Equal To", "Less Than", "Greater Than"];
+    allDropdownItems.value = Object.keys(sectionTags.value);
     dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
@@ -889,7 +923,8 @@ const fetchSegmentData = async () => {
       }
       if (props.data?.name === "Session Tag") {
         sectionTags.value = result;
-        dropdownItems.value = Object.keys(result);
+        allDropdownItems.value = Object.keys(sectionTags.value);
+        dropdownItems.value = allDropdownItems.value;
       } else {
         dropdownItems.value = result;
       }
@@ -1182,6 +1217,11 @@ input:target {
             /* scrollbar-gutter: stable both-edges; */
             z-index: 10;
             /* transition: all 3s ease-in-out; */
+
+            &.align_center {
+              top: 50%;
+              transform: translate(0px, -28%);
+            }
 
             .dropdown_menu_item {
               display: flex;
