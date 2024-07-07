@@ -25,6 +25,10 @@ Import the component locally or define it globally and include the css file:
 <template>
   <!-- create a reset button that dispatched  "reset-all-filters-event"-->
   <button @click="resetAll">reset</button> 
+  <!-- disabled comparison mode -->
+    <button @click="disabledComparison">disabled Comparison</button>
+  <!-- enabled comparison mode -->
+  <button @click="enabledComparison">enabled Comparison</button>
   <!-- call the HeatmapFilter -->
   <HeatmapFilter @on-filter-values-change="filterValueChanged" />
   
@@ -44,6 +48,19 @@ const resetAll = () => {
   document.dispatchEvent(resetAllEvent);
 };
 
+const disabledComparison = () => {
+  const resetAllEvent = new CustomEvent("disable-comparison-event", {
+    detail: { disabled: true },
+  });
+  document.dispatchEvent(resetAllEvent);
+};
+
+const enabledComparison = () => {
+  const resetAllEvent = new CustomEvent("disable-comparison-event", {
+    detail: { disabled: false },
+  });
+  document.dispatchEvent(resetAllEvent);
+};
 
 </script>
 ```

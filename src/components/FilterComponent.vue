@@ -22,7 +22,7 @@
             v-for="(filter, index) in selectIndicators.pendingList.slice(0, 2)"
             :key="filter.name"
           >
-            <div class="right_button new_color insideCompare">
+            <div class="right_button not_clickable new_color insideCompare">
               <p class="right_button_text">{{ filter.name }}</p>
             </div>
             <p v-if="index < 1" class="heat_custom_filter_header_text">to</p>
@@ -30,7 +30,7 @@
               v-if="
                 index === selectIndicators.pendingList.length - 1 && index < 1
               "
-              class="right_button awaiting"
+              class="right_button not_clickable awaiting"
             >
               <p class="right_button_text">Select a filter</p>
             </div>
@@ -48,7 +48,7 @@
                 :data-idsegment="data.idsegment"
                 :data-definition="data.definition"
                 :data-title="data.title"
-                @click="setActive(data)"
+                @click="disableButton(data.name) ? undefined : setActive(data)"
                 class="filter_body_filter"
                 :class="{
                   pendingClass: filterExist(data.name),
@@ -76,7 +76,7 @@
                 :data-idsegment="data.idsegment"
                 :data-definition="data.definition"
                 :data-title="data.title"
-                @click="setActive(data)"
+                @click="disableButton(data.name) ? undefined : setActive(data)"
                 class="filter_body_filter"
                 :class="{
                   pendingClass: filterExist(data.name),
@@ -105,7 +105,9 @@
                   :data-idsegment="data.idsegment"
                   :data-definition="data.definition"
                   :data-title="data.title"
-                  @click="setActive(data)"
+                  @click="
+                    disableButton(data.name) ? undefined : setActive(data)
+                  "
                   class="filter_body_filter"
                   :class="{
                     pendingClass: filterExist(data.name),
@@ -130,17 +132,21 @@
       </div>
       <div class="heat_custom_filter_footer">
         <div class="left_button">
-          <p class="left_button_text" @click="resetAllFilters(true)">Reset</p>
+          <p class="left_button_text" @click="resetAllFilters(false, true)">
+            Reset
+          </p>
         </div>
         <div class="right_buttons">
-          <div
-            v-if="selectIndicators.pendingList.length < 2"
-            class="right_button"
-            :class="{ disabled_me: !selectIndicators.active }"
-            @click="onCompareWith()"
-          >
-            <p class="right_button_text">Compare to...</p>
-          </div>
+          <template v-if="!disabledComparison">
+            <div
+              v-if="selectIndicators.pendingList.length < 2"
+              class="right_button"
+              :class="{ disabled_me: !selectIndicators.active }"
+              @click="!selectIndicators.active ? undefined : onCompareWith()"
+            >
+              <p class="right_button_text">Compare to...</p>
+            </div>
+          </template>
           <div
             class="right_button new_color"
             :class="{ disabled_me: !disableCompareButton && !resetClicked }"
@@ -157,22 +163,19 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, defineEmits, onMounted } from "vue";
-import flightLand from "../assets/images/flight_land.svg";
-import trackChanges from "../assets/images/track_changes.svg";
-import numbers from "../assets/images/numbers.svg";
 import task from "../assets/images/task.svg";
-import group from "../assets/images/group.svg";
-import groupAdd from "../assets/images/group_add.svg";
-import sentimentExtremelyDissatisfied from "../assets/images/sentiment_extremely_dissatisfied.svg";
-import addShoppingCart from "../assets/images/add_shopping_cart.svg";
-import payments from "../assets/images/payments.svg";
+
 import FilterModal from "./FilterModal.vue";
-import { CombinedFilter, ECommerceDataItem, SessionDataItem } from "./@types";
+import { CombinedFilter, SessionDataItem } from "./@types";
+import { eCommerceData, sessionData } from "./data";
 
 type SelectIndicators = {
   active?: CombinedFilter;
   pendingList: CombinedFilter[];
 };
+
+type Item = { name: string; definition: string };
+
 export type ReturnData = { definition: string; name: string };
 
 const props = defineProps<{
@@ -185,97 +188,6 @@ const emit = defineEmits<{
   (e: "reset-all-filters"): void;
 }>();
 
-const sessionData: SessionDataItem[] = [
-  {
-    definition: "entryPageUrl==",
-    iconSrc: flightLand,
-    idsegment: 0,
-    name: "Entry Page",
-    title: "QuickFilter-EntryPage",
-  },
-  {
-    definition: "referrerUrl==",
-    iconSrc: trackChanges,
-    idsegment: 0,
-    name: "Traffic Source",
-    title: "QuickFilter-TrafficSource",
-    notDone: true,
-  },
-  {
-    definition: "sessionTagName==;sessionTagValue==",
-    iconSrc: flightLand,
-    idsegment: 0,
-    name: "Session Tag",
-    title: "QuickFilter-SessionTag",
-    showSign: true,
-  },
-  {
-    definition: "visitCount==",
-    iconSrc: numbers,
-    idsegment: 0,
-    name: "Total Pages Visited",
-    title: "QuickFilter-TotalPagesVisited",
-  },
-  {
-    definition: "actionUrl==",
-    iconSrc: task,
-    idsegment: 0,
-    name: "Viewed Page",
-    title: "QuickFilter-ViewedPage",
-  },
-  {
-    definition: "visitorType==returning",
-    iconSrc: group,
-    idsegment: 0,
-    name: "Returning Users",
-    title: "QuickFilter-ReturningUsers",
-    isDefinitionValueSet: true,
-  },
-  {
-    definition: "visitorType==new",
-    iconSrc: groupAdd,
-    idsegment: 0,
-    name: "New Users",
-    title: "QuickFilter-NewUsers",
-    isDefinitionValueSet: true,
-  },
-  {
-    definition: "heatmapType==rage",
-    iconSrc: sentimentExtremelyDissatisfied,
-    idsegment: 0,
-    name: "Rage Clicks",
-    title: "rage click events",
-    isDefinitionValueSet: true,
-  },
-];
-
-const eCommerceData: ECommerceDataItem[] = [
-  {
-    definition: "revenueOrder>1",
-    iconSrc: addShoppingCart,
-    idsegment: 0,
-    name: "Purchasers",
-    title: "QuickFilter-Purchasers",
-    isDefinitionValueSet: true,
-  },
-  {
-    definition: "revenueOrder==0",
-    iconSrc: addShoppingCart,
-    idsegment: 0,
-    name: "Non Purchasers",
-    title: "QuickFilter-Non-Purchasers",
-    isDefinitionValueSet: true,
-  },
-  {
-    definition: "revenueOrder",
-    iconSrc: payments,
-    idsegment: 0,
-    name: "Average Order Value",
-    title: "QuickFilter-OrderValue",
-    showSign: true,
-  },
-];
-
 const customData = ref<SessionDataItem[]>([]);
 
 const selectIndicators = ref<SelectIndicators>({
@@ -286,6 +198,7 @@ const selectIndicators = ref<SelectIndicators>({
 const showSelectModal = ref(false);
 const modalData = ref<CombinedFilter>();
 const resetClicked = ref(false);
+const disabledComparison = ref(false);
 const defaultSelections = ref<ReturnData[]>();
 
 function getImagePath(filename: string) {
@@ -297,10 +210,19 @@ const canApply = computed(
 );
 
 function setActive(filter: CombinedFilter) {
+  const selectedAlready = selectIndicators.value.pendingList
+    .map((item) => item.name)
+    .includes(filter.name);
+  const hasNoSubStuff = selectIndicators.value.pendingList.find(
+    (item) => item.name === filter.name
+  )?.isDefinitionValueSet;
+  if (selectedAlready && hasNoSubStuff) return;
+  // console.log(filter, selectIndicators.value);
+
   defaultSelections.value = [];
-  if (!filter.isDefinitionValueSet && !filterExist(filter.name)) {
+  if (!filter.isDefinitionValueSet) {
     showSelectModal.value = true;
-    modalData.value = filter;
+    modalData.value = { ...modalData.value, ...filter };
   } else {
     selectIndicators.value.active = filter;
     if (selectIndicators.value.pendingList.length === 1) {
@@ -339,24 +261,40 @@ function onCompareWith(fromModal?: boolean) {
     ];
     selectIndicators.value.active = undefined;
   }
+  updateNames(selectIndicators.value.pendingList);
 }
 
-function resetAllFilters(click?: boolean) {
+const updateNames = (entries: CombinedFilter[]): CombinedFilter[] => {
+  const updatedEntries = [...entries];
+  for (let i = 0; i < updatedEntries.length; i++) {
+    for (let j = i + 1; j < updatedEntries.length; j++) {
+      if (updatedEntries[i].name === updatedEntries[j].name) {
+        updatedEntries[i].name = updatedEntries[i].nameForCompare!;
+        updatedEntries[j].name = updatedEntries[j].nameForCompare!;
+      }
+    }
+  }
+  return updatedEntries;
+};
+
+function resetAllFilters(click?: boolean, enable?: boolean) {
   selectIndicators.value.pendingList = [];
   selectIndicators.value.active = undefined;
   selectIndicators.value.pendingList = [];
   defaultSelections.value = [];
-  if (click) {
-    resetClicked.value = true;
-    emit("reset-all-filters");
-  }
+  if (enable) resetClicked.value = true;
+  if (click) emit("reset-all-filters");
 }
 
 function disableButton(button: string) {
   const index = selectIndicators.value.pendingList
     .map((f) => f.name)
     .indexOf(button);
-  return index >= 0;
+  const hasNoSubStuff = selectIndicators.value.pendingList.find(
+    (item) => item.name === button
+  )?.isDefinitionValueSet;
+  const notEnough = selectIndicators.value.pendingList.length === 2;
+  return Boolean((index >= 0 && !!hasNoSubStuff) || notEnough);
 }
 
 const readyToCompare = computed(
@@ -378,10 +316,7 @@ const disableCompareButton = computed(() => {
   );
 });
 
-function onItemSelected(
-  item: { name: string; definition: string },
-  custom: boolean
-) {
+function onItemSelected(item: Item, custom: boolean) {
   if (custom) {
     customData.value = [
       ...customData.value,
@@ -402,9 +337,9 @@ function onItemSelected(
   }
 
   if (modalData.value) {
-    // const definition = modalData.value.definition;
     modalData.value = {
       ...modalData.value,
+      nameForCompare: item.name,
       definition: `${item.definition}`,
     };
     selectIndicators.value.active = modalData.value;
@@ -446,6 +381,10 @@ onMounted(() => {
 
   document.addEventListener("reset-all-filters-event", () => {
     resetAllFilters(true);
+  });
+  document.addEventListener("disable-comparison-event", (event: any) => {
+    console.log(event.detail.disabled);
+    disabledComparison.value = event.detail.disabled;
   });
 });
 </script>
@@ -590,7 +529,7 @@ onMounted(() => {
             }
 
             &.pendingClass {
-              background-color: #000000bc;
+              background-color: #44c291;
               .filter_body_filter_text {
                 color: #fff;
               }
@@ -614,6 +553,7 @@ onMounted(() => {
 
             &.disabled_me {
               background-color: transparent;
+              cursor: not-allowed !important;
               .filter_body_filter_text {
                 color: var(--Grey-500, #999fa5);
               }
@@ -699,6 +639,10 @@ onMounted(() => {
     box-shadow: 0px 1px 2px 0px rgba(26, 40, 53, 0.09);
     cursor: pointer;
 
+    &.not_clickable {
+      cursor: auto !important;
+    }
+
     &.new_color {
       background: var(--Primary-03-Main, #00936f);
       .right_button_text {
@@ -720,6 +664,10 @@ onMounted(() => {
       padding: 6px 10px;
       .right_button_text {
         font-size: 12px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 160px;
+        white-space: nowrap;
       }
     }
 

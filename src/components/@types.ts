@@ -55,4 +55,15 @@ export interface ECommerceDataItem {
   showSign?: boolean; // Optional property
 }
 
-export type CombinedFilter = SessionDataItem | ECommerceDataItem;
+interface CompareName {
+  nameForCompare?: string;
+}
+
+export type CombinedFilter = (SessionDataItem | ECommerceDataItem) &
+  CompareName;
+
+export interface DisableComparisonEvent extends Event {
+  detail: {
+    disabled: boolean;
+  };
+}

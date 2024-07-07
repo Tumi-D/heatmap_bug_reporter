@@ -1,4 +1,113 @@
-import { DataItem } from "./@types";
+import { DataItem, ECommerceDataItem, SessionDataItem } from "./@types";
+import flightLand from "../assets/images/flight_land.svg";
+import trackChanges from "../assets/images/track_changes.svg";
+import numbers from "../assets/images/numbers.svg";
+import group from "../assets/images/group.svg";
+import groupAdd from "../assets/images/group_add.svg";
+import sentimentExtremelyDissatisfied from "../assets/images/sentiment_extremely_dissatisfied.svg";
+import addShoppingCart from "../assets/images/add_shopping_cart.svg";
+import payments from "../assets/images/payments.svg";
+import task from "../assets/images/task.svg";
+import partner from "../assets/images/timeline.svg";
+
+export const sessionData: SessionDataItem[] = [
+  {
+    definition: "entryPageUrl==",
+    iconSrc: flightLand,
+    idsegment: 0,
+    name: "Entry Page",
+    title: "QuickFilter-EntryPage",
+  },
+  {
+    definition: "referrerUrl==",
+    iconSrc: trackChanges,
+    idsegment: 0,
+    name: "Traffic Source",
+    title: "QuickFilter-TrafficSource",
+    notDone: true,
+  },
+  {
+    definition: "sessionTagName==;sessionTagValue==",
+    iconSrc: flightLand,
+    idsegment: 0,
+    name: "Session Tag",
+    title: "QuickFilter-SessionTag",
+    showSign: true,
+  },
+  {
+    definition: "visitCount==",
+    iconSrc: numbers,
+    idsegment: 0,
+    name: "Total Pages Visited",
+    title: "QuickFilter-TotalPagesVisited",
+  },
+  {
+    definition: "actionUrl==",
+    iconSrc: task,
+    idsegment: 0,
+    name: "Viewed Page",
+    title: "QuickFilter-ViewedPage",
+  },
+  {
+    definition: "visitorType==returning",
+    iconSrc: group,
+    idsegment: 0,
+    name: "Returning Users",
+    title: "QuickFilter-ReturningUsers",
+    isDefinitionValueSet: true,
+  },
+  {
+    definition: "visitorType==new",
+    iconSrc: groupAdd,
+    idsegment: 0,
+    name: "New Users",
+    title: "QuickFilter-NewUsers",
+    isDefinitionValueSet: true,
+  },
+  {
+    definition: "heatmapType==rage",
+    iconSrc: sentimentExtremelyDissatisfied,
+    idsegment: 0,
+    name: "Rage Clicks",
+    title: "rage click events",
+    isDefinitionValueSet: true,
+  },
+];
+
+export const eCommerceData: ECommerceDataItem[] = [
+  {
+    definition: "revenueOrder>1",
+    iconSrc: addShoppingCart,
+    idsegment: 0,
+    name: "Purchasers",
+    title: "QuickFilter-Purchasers",
+    isDefinitionValueSet: true,
+  },
+  {
+    definition: "revenueOrder==0",
+    iconSrc: addShoppingCart,
+    idsegment: 0,
+    name: "Non Purchasers",
+    title: "QuickFilter-Non-Purchasers",
+    isDefinitionValueSet: true,
+  },
+  {
+    definition: "revenueOrder",
+    iconSrc: payments,
+    idsegment: 0,
+    name: "Average Order Value",
+    title: "QuickFilter-OrderValue",
+    showSign: true,
+  },
+  {
+    definition: "partnerName==",
+    iconSrc: partner,
+    idsegment: 0,
+    name: "Partners",
+    title: "partner-name",
+    showSign: true,
+  },
+];
 
 export const segmentValues = {
   visitorType: ["returning", "new"],

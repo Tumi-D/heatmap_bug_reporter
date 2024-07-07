@@ -173,9 +173,14 @@
                       dropdownItems"
                       :key="condition"
                       class="dropdown_menu_item"
-                      :class="{ activeClass: condition === item.default }"
+                      :class="{
+                        disabled_me: alreadySelected(condition),
+                        activeClass: condition === item.default,
+                      }"
                       @click="
-                        selectItem(condition, 'default', item.index, data)
+                        alreadySelected(condition)
+                          ? undefined
+                          : selectItem(condition, 'default', item.index, data)
                       "
                     >
                       {{ condition }}
@@ -540,7 +545,6 @@ const toggleDropdown = (
 
   setTimeout(() => {
     touchingBottom.value = isElementTouchingBottom(".dropdown_menu_wrapper", 5);
-    console.log(touchingBottom.value);
   }, 10);
 };
 
@@ -551,7 +555,6 @@ const openDropdown = (what: "default" | "action" | "value", index: number) => {
   );
   setTimeout(() => {
     touchingBottom.value = isElementTouchingBottom(".dropdown_menu_wrapper", 5);
-    console.log(touchingBottom.value);
   }, 10);
 };
 
@@ -573,6 +576,8 @@ const handleClickOutside = () => {
 const handleBlur = () => {
   setTimeout(() => closeDropdown(), 100); // Delay to allow item selection
 };
+
+console.log(props.data);
 
 const selectItem = (
   item: string,
@@ -698,7 +703,9 @@ const next = () => {
         )
         .join(";");
       emit("item-selected", {
-        name: props.data?.name,
+        name: `${props.data?.name} ${
+          conditions[allData.value[0].default as keyof typeof conditions]
+        } ${allData.value[0].value}`,
         definition: encodeURI(returnData),
       });
       props.closeSelectModal();
@@ -709,26 +716,65 @@ const next = () => {
       const [segmentName, segmentValue] = currentData.segment?.split(
         ";"
       ) as string[];
-
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
       emit("item-selected", {
-        name: props.data?.name,
+        name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,
         definition: encodeURI(returnData),
       });
       props.closeSelectModal();
       return;
     } else {
+      let segment: string | number = "";
       returnData = allData.value
         .map((data) => (data.segment || props.data?.definition) + data.default)
         .join(";");
+      if (typeof allData.value[0].default === "string")
+        segment = extractInfoFromUrl(allData.value[0].default);
+      else segment = allData.value[0].default;
       emit("item-selected", {
-        name: props.data?.name,
+        name: `${props.data?.name}: ${segment}`,
         definition: encodeURI(returnData),
       });
       props.closeSelectModal();
       return;
     }
   }
+};
+
+const extractInfoFromUrl = (url?: string): string => {
+  try {
+    if (!url) throw new Error("URL is undefined or empty.");
+    if (url.startsWith("file://")) {
+      const pathParts = url.split("/").filter((part) => part.length > 0);
+      return pathParts.length > 0 ? pathParts[pathParts.length - 1] : "unknown";
+    } else {
+      const urlObject = new URL(url);
+      const hostname = urlObject.hostname;
+      const domainParts = hostname.startsWith("www.")
+        ? hostname.slice(4)
+        : hostname;
+      const pathParts = urlObject.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
+      if (pathParts.length > 0) {
+        return pathParts[pathParts.length - 1];
+      } else {
+        const domainName = domainParts.split(".")[0];
+        return domainName;
+      }
+    }
+  } catch (error) {
+    console.error(`Invalid URL: ${url}`, error);
+    const len = (url || "").split("/").length;
+    return (url || "").split("/")[len - 1];
+  }
+};
+
+const alreadySelected = (item: string) => {
+  return (
+    extractInfoFromUrl(item)?.trim() ===
+    props.data?.nameForCompare?.replace(`${props.data.name}:`, "")?.trim()
+  );
 };
 
 const handleDocumentClick = (event: MouseEvent) => {
@@ -1499,5 +1545,10 @@ input:target {
   pointer-events: none;
   background-color: #67707811;
   /* transform: translate(-50%, -50%); */
+}
+
+.disabled_me {
+  opacity: 0.5;
+  cursor: not-allowed !important;
 }
 </style>

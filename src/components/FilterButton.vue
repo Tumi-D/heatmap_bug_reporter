@@ -97,6 +97,10 @@ defineProps<{ filteredValues?: ReturnData[]; onShowFilterMenu: () => void }>();
         font-style: normal;
         font-weight: 600;
         line-height: normal;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 160px;
+        white-space: nowrap;
       }
     }
   }
