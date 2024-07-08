@@ -351,7 +351,13 @@ import validator from "./validator";
 
 import { _data, segmentValues } from "./data";
 
-import { type DataItem, type AllData, type CombinedFilter } from "./@types";
+import {
+  type DataItem,
+  type AllData,
+  type CombinedFilter,
+  type Partner,
+  type Experiment,
+} from "./@types";
 
 type GroupedData = {
   [category: string]: DataItem[];
@@ -486,6 +492,39 @@ const sectionTags = ref({
   utm_term: ["120210339583610110"],
   utm_campaign: ["120203706182330110", "klarna-merchantboost"],
 });
+const partners = ref<Partner>({
+  partners: ["intelligem", "visually"],
+  experiments: {
+    intelligem: [
+      {
+        value: "New Homepage - V2.1 - Control",
+        tag: "intelligem_variant",
+        variant_id: "New Homepage - V2.1 - Control",
+        experiment_id: null,
+      },
+      {
+        value: "New Homepage - V2.1 - New Homepage",
+        tag: "intelligem_variant",
+        variant_id: "New Homepage - V2.1 - New Homepage",
+        experiment_id: null,
+      },
+    ],
+    visually: [
+      {
+        value: "New Homepage",
+        tag: "visually_variant",
+        variant_id: "223454545",
+        experiment_id: "909939.8,38883.1004202096",
+      },
+      {
+        value: "New Hero",
+        tag: "visually_variant",
+        variant_id: "",
+        experiment_id: null,
+      },
+    ],
+  },
+});
 const tagOptions = ref<string[]>();
 const inputValue = ref<number | string>("");
 const filterName = ref<string>();
@@ -577,7 +616,7 @@ const handleBlur = () => {
   setTimeout(() => closeDropdown(), 100); // Delay to allow item selection
 };
 
-console.log(props.data);
+// console.log(props.data);
 
 const selectItem = (
   item: string,
@@ -621,6 +660,15 @@ const selectItem = (
         ? { ...data, [what]: item, segment: actionValue?.definition }
         : data
     );
+
+    if (what === "default" && props.data?.name === "Partners") {
+      console.log(partners.value.experiments);
+      tagOptions.value =
+        (partners.value.experiments as any)[item]?.map(
+          (d: Experiment) => d.value
+        ) || [];
+      allData.value[0].value = "";
+    }
   }
 
   if (what === "value") {
@@ -659,6 +707,11 @@ switch (props.data?.name) {
     dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
+  case "Partners":
+    allDropdownItems.value = partners.value.partners;
+    dropdownItems.value = allDropdownItems.value;
+    tagOptions.value = [];
+    break;
   case "custom":
     break;
   default:
@@ -667,9 +720,8 @@ switch (props.data?.name) {
 
 const next = () => {
   const validName = validateFilterName();
-  if (props.data?.name === "Create Custom Filter") {
-    if (validName) return;
-  }
+  if (props.data?.name === "Create Custom Filter") if (validName) return;
+
   const valid = validator(allData.value, props.data);
   if (!valid) return;
 
@@ -900,6 +952,7 @@ const labelMap = (inputType?: string) => {
     "Average Order Value": "Condition",
     "Create Custom Filter": "Condition",
     "Session Tag": "Session Tag Name",
+    Partners: "Select Partners Name",
   };
   return map[inputType || ""];
 };
@@ -913,6 +966,7 @@ const placeholderMap = (inputType?: string) => {
     "Average Order Value": "Equals",
     "Create Custom Filter": "Equals",
     "Session Tag": "Select",
+    Partners: "Select",
   };
   return map[inputType || ""];
 };
@@ -925,6 +979,7 @@ const SecondLabelMap = (inputType?: string) => {
     "Average Order Value": "Value",
     "Create Custom Filter": "Value",
     "Session Tag": "Tag Value",
+    Partners: "Select Experiments",
   };
   return map[inputType || ""];
 };
@@ -937,6 +992,7 @@ const SecondPlaceholderMap = (inputType?: string) => {
     "Average Order Value": "0.00",
     "Create Custom Filter": "Enter value",
     "Session Tag": "Multiselect",
+    Partners: "Select",
   };
   return map[inputType || ""];
 };
@@ -971,6 +1027,11 @@ const fetchSegmentData = async () => {
         sectionTags.value = result;
         allDropdownItems.value = Object.keys(sectionTags.value);
         dropdownItems.value = allDropdownItems.value;
+      }
+      if (props.data?.name === "Partners") {
+        partners.value = result;
+        allDropdownItems.value = partners.value.partners;
+        dropdownItems.value = allDropdownItems.value;
       } else {
         dropdownItems.value = result;
       }
@@ -989,6 +1050,7 @@ const makeRequestFor = (filter?: string): boolean => {
     "Traffic Source",
     "Session Tag",
     "Viewed Page",
+    "Partners",
   ];
   return filter ? allowRequestList.includes(filter) : false;
 };

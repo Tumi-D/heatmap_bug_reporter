@@ -42,6 +42,22 @@ export default function validator(
   }
 
   // for Total Pages Visited
+  if (props?.name === "Partners") {
+    const validCondition = !!data[0].default;
+    const validValue = !!data[0].value;
+    valid = validCondition && validValue;
+    data[0].conditionError = !validCondition;
+    data[0].valueError = !validValue;
+    if (!valid) {
+      if (!validCondition)
+        data[0].conditionErrorMsg = "Please select a Partners Name";
+      else data[0].conditionErrorMsg = "";
+      if (!validValue) data[0].valueErrorMsg = "Please select an Experiment";
+      else data[0].valueErrorMsg = "";
+    }
+  }
+
+  // for Total Pages Visited
   if (props?.name === "Average Order Value") {
     const validCondition = conditions.includes(data[0].default);
     const validValue = !!data[0].value;

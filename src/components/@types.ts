@@ -67,3 +67,19 @@ export interface DisableComparisonEvent extends Event {
     disabled: boolean;
   };
 }
+
+export interface Experiment {
+  value: string;
+  tag: string;
+  variant_id: string;
+  experiment_id: string | null;
+}
+
+export interface Experiments {
+  [x: string]: Experiment[];
+}
+
+export interface Partner {
+  partners: string[];
+  experiments: Experiments;
+}
