@@ -16,7 +16,7 @@
             :src="getImagePath(data.iconSrc)"
             alt=""
           />
-          <p class="filter_header_text">{{ data?.name }}</p>
+          <p class="filter_header_text">{{ getTitle(data?.name) }}</p>
         </div>
         <close-svg @click="closeSelectModal" />
       </header>
@@ -119,6 +119,7 @@
                             {{ innerItem.name }}
                           </p>
                           <div
+                            class="help_icon_inner"
                             v-if="
                               innerItem.needsMostFrequentValues &&
                               innerItem.acceptedValues
@@ -164,7 +165,11 @@
                 </p>
                 <transition name="dropdown">
                   <ul
-                    v-show="item.defaultOpen && noDropdown(data?.name)"
+                    v-show="
+                      item.defaultOpen &&
+                      noDropdown(data?.name) &&
+                      (actionValue?.conditions || dropdownItems).length > 0
+                    "
                     class="dropdown_menu_wrapper"
                     :class="{ align_center: touchingBottom }"
                   >
@@ -193,7 +198,7 @@
               <p class="dropdown_title">{{ SecondLabelMap(data?.name) }}</p>
               <div class="dropdown_body_wrapper">
                 <div
-                  v-if="actionValue?.options?.length || tagOptions"
+                  v-if="actionValue?.options?.length || tagOptions?.length"
                   class="arrow_button_wrapper"
                   :class="{ we_have_error: item.valueError }"
                   @click="toggleDropdown('value', item.index)"
@@ -204,7 +209,8 @@
                   class="dropdown_body"
                   :class="{
                     second_one: data?.name === 'Average Order Value',
-                    has_arrow: actionValue?.options?.length || tagOptions,
+                    has_arrow:
+                      actionValue?.options?.length || tagOptions?.length,
                   }"
                   :type="
                     actionValue?.options?.length
@@ -214,6 +220,7 @@
                       : 'text'
                   "
                   :placeholder="SecondPlaceholderMap(data?.name)"
+                  @input="filterItems('value', item.index)"
                   v-model="item.value"
                   @blur="handleBlur()"
                   @focus="openDropdown('value', item.index)"
@@ -232,7 +239,7 @@
                   <ul
                     v-show="
                       item.valueOpen &&
-                      (actionValue?.options?.length || tagOptions)
+                      (actionValue?.options || tagOptions)?.length
                     "
                     class="dropdown_menu_wrapper"
                     :class="{ align_center: touchingBottom }"
@@ -357,6 +364,7 @@ import {
   type CombinedFilter,
   type Partner,
   type Experiment,
+  type CustomValues,
 } from "./@types";
 
 type GroupedData = {
@@ -480,9 +488,27 @@ const props = defineProps<{
 
 const emit = defineEmits(["item-selected"]);
 
+const getTextTitle = () => {
+  let title = "";
+  if (props.data?.edit) title = `${props.data.title}`;
+  return title;
+};
+
+const getTitle = (text?: string) => {
+  let title = text;
+  if (props.data?.edit) title = `${text} (${props.data.title})`;
+  return title;
+};
+
+// const getKeyByValue = (value: string): string =>
+//   Object.keys(conditions).find((key) =>
+//     value.includes((conditions as any)[key])
+//   ) || "";
+
 // const isDropdownOpen = ref({ default: false, action: false, value: false });
 const currentUrl = ref(window.location.href);
 const allDropdownItems = ref(items);
+const allSecondOptions = ref<string[]>([]);
 const dropdownItems = ref(allDropdownItems.value);
 const sectionTags = ref({
   variant: [],
@@ -525,12 +551,18 @@ const partners = ref<Partner>({
     ],
   },
 });
+const _experiments = ref<Experiment[]>();
+const experiment = ref<Experiment>();
 const tagOptions = ref<string[]>();
 const inputValue = ref<number | string>("");
-const filterName = ref<string>();
+const filterName = ref<string>(getTextTitle());
 const filterNameError = ref(false);
 const filterNameErrorMessage = ref("");
 const loading = ref<boolean>(false);
+const allActionValues = ref<{ conditions: string[]; options: string[] }>({
+  conditions: [],
+  options: [],
+});
 const actionValue = ref<DataItem>();
 const touchingBottom = ref(false);
 const allData = ref<AllData[]>([
@@ -552,6 +584,16 @@ const allData = ref<AllData[]>([
   },
 ]);
 
+if (props.data?.edit) {
+  let allDataClone: AllData[] = [];
+  props.data.rawValues?.forEach((value: CustomValues, index: number) => {
+    allDataClone.push({ ...allData.value[0], index, ...value });
+  });
+  allData.value = allDataClone;
+}
+
+console.log(props.data);
+
 const isElementTouchingBottom = (
   selector: string,
   threshold: number = 5
@@ -561,7 +603,10 @@ const isElementTouchingBottom = (
   const rect = element.getBoundingClientRect();
   const windowHeight =
     window.innerHeight || document.documentElement.clientHeight;
-  return windowHeight - rect.bottom <= threshold;
+  return (
+    windowHeight - rect.bottom <= threshold &&
+    props.data?.name !== "Create Custom Filter"
+  );
 };
 
 const fieldToUpdate = (what: "default" | "action" | "value") =>
@@ -651,7 +696,8 @@ const selectItem = (
         : data
     );
     if (what === "default") {
-      tagOptions.value = (sectionTags.value as any)[item] || [];
+      allSecondOptions.value = (sectionTags.value as any)[item] || [];
+      tagOptions.value = allSecondOptions.value;
       allData.value[0].value = "";
     }
   } else {
@@ -662,28 +708,37 @@ const selectItem = (
     );
 
     if (what === "default" && props.data?.name === "Partners") {
-      console.log(partners.value.experiments);
-      tagOptions.value =
-        (partners.value.experiments as any)[item]?.map(
+      allSecondOptions.value =
+        (partners.value?.experiments as any)[item]?.map(
           (d: Experiment) => d.value
         ) || [];
+      tagOptions.value = allSecondOptions.value;
       allData.value[0].value = "";
+      _experiments.value = partners.value?.experiments?.[item];
     }
   }
 
   if (what === "value") {
+    if (props.data?.name === "Partners") {
+      experiment.value = _experiments.value?.find((d) => d.value === item);
+    }
     inputValue.value = item;
   }
   closeDropdown();
 };
 
+if (!(props.data?.name === "Session Tag" || props.data?.name === "Partners")) {
+  tagOptions.value = undefined;
+}
+
 const innerItemSelected = (item: DataItem, index: number) => {
   allData.value = allData.value.map((data) =>
     data.index === index
-      ? { ...data, action: item.name, segment: item.segment }
+      ? { ...data, action: item.name, segment: item.segment, name: item.name }
       : data
   );
-
+  if (item.options) allActionValues.value.options = item.options;
+  if (item.conditions) allActionValues.value.conditions = item.conditions;
   actionValue.value = item;
   closeDropdown();
 };
@@ -692,9 +747,7 @@ const cancel = () => {
   props.closeSelectModal();
 };
 
-const getImagePath = (filename: string) => {
-  return filename;
-};
+const getImagePath = (filename: string) => filename;
 
 switch (props.data?.name) {
   case "Average Order Value":
@@ -703,12 +756,14 @@ switch (props.data?.name) {
     dropdownItems.value = allDropdownItems.value;
     break;
   case "Session Tag":
-    allDropdownItems.value = Object.keys(sectionTags.value);
+    allSecondOptions.value = Object.keys(sectionTags.value || {});
+    allDropdownItems.value = allSecondOptions.value;
     dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
   case "Partners":
-    allDropdownItems.value = partners.value.partners;
+    allSecondOptions.value = partners.value?.partners || [];
+    allDropdownItems.value = allSecondOptions.value;
     dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
@@ -734,14 +789,60 @@ const next = () => {
           data.value
       )
       .join(";");
-    // console.log({ name: filterName.value, definition: returnData });
 
-    emit(
-      "item-selected",
-      { name: filterName.value, definition: returnData },
-      true
-    );
-    props.closeSelectModal();
+    const restData = allData.value.map((data) => ({
+      action: data.action,
+      default: data.default,
+      name: data.name,
+      segment: data.segment,
+      value: data.value,
+    }));
+
+    const dataToDb = JSON.stringify({
+      data: restData,
+      title: props.data.title,
+      definition: returnData,
+      idSite: getItemFromUrl("idSite"),
+      deviceType: getItemFromUrl("deviceType"),
+      idSiteHsr: getItemFromUrl("idSiteHsr"),
+      filterId: props.data.filterId,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      body: dataToDb,
+    };
+
+    const url =
+      "/index.php?module=API&format=json&method=API.processCustomFilters";
+
+    console.log({ dataToDb });
+
+    fetch(url, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.ok) {
+          loading.value = false;
+          return;
+        }
+        console.log(result);
+        emit(
+          "item-selected",
+          {
+            name: filterName.value,
+            definition: returnData,
+            rawValues: restData,
+          },
+          true
+        );
+        loading.value = false;
+        props.closeSelectModal();
+      })
+      .catch((error) => {
+        console.log({ error });
+        loading.value = false;
+      });
+
     return;
   } else {
     let returnData = "";
@@ -772,6 +873,21 @@ const next = () => {
       emit("item-selected", {
         name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,
         definition: encodeURI(returnData),
+      });
+      props.closeSelectModal();
+      return;
+    }
+    if (props.data?.name === "Partners") {
+      const returnObj = { variantId: experiment.value?.variant_id };
+      returnData += `partnerName==${allData.value[0].default};friendlyName==${experiment.value?.value}`;
+      if (experiment.value?.variant_id)
+        returnData += `;variantId==${experiment.value?.variant_id}`;
+      if (experiment.value?.experiment_id)
+        returnData += `;experienceId==${experiment.value?.experiment_id}`;
+      emit("item-selected", {
+        name: `${props.data?.name}: ${allData.value[0].default}`,
+        definition: encodeURI(returnData),
+        rawValues: returnObj,
       });
       props.closeSelectModal();
       return;
@@ -816,16 +932,17 @@ const extractInfoFromUrl = (url?: string): string => {
       }
     }
   } catch (error) {
-    console.error(`Invalid URL: ${url}`, error);
-    const len = (url || "").split("/").length;
-    return (url || "").split("/")[len - 1];
+    // console.error(`Invalid URL: ${url}`, error);
+    const len = (url || "")?.split("/")?.length;
+    return (url || "")?.split("/")?.[len - 1] || "";
   }
 };
 
 const alreadySelected = (item: string) => {
   return (
     extractInfoFromUrl(item)?.trim() ===
-    props.data?.nameForCompare?.replace(`${props.data.name}:`, "")?.trim()
+      props.data?.nameForCompare?.replace(`${props.data.name}:`, "")?.trim() &&
+    !["Partners", "Session Tag"].includes(props.data.name)
   );
 };
 
@@ -846,10 +963,54 @@ const filterItems = (what: "default" | "action" | "value", index: number) => {
     what
   ]?.toLowerCase();
 
-  dropdownItems.value = allDropdownItems.value.filter((item) =>
-    item.toLowerCase().includes(searchText)
-  );
+  if (what === "default") {
+    if (actionValue.value?.conditions) {
+      actionValue.value.conditions = allActionValues.value?.conditions?.filter(
+        (item) => item.toLowerCase().includes(searchText)
+      );
+    } else {
+      dropdownItems.value = allDropdownItems.value.filter((item) =>
+        item.toLowerCase().includes(searchText)
+      );
+    }
+  }
+
+  if (what === "value") {
+    if (actionValue.value?.options) {
+      actionValue.value.options = allActionValues.value?.options?.filter(
+        (item) => item.toLowerCase().includes(searchText)
+      );
+    } else {
+      tagOptions.value = allSecondOptions.value.filter((item) =>
+        item.toLowerCase().includes(searchText)
+      );
+    }
+  }
+  if (what === "action") {
+    actionItems.value = actionItemsSearch(allActionItems.value, searchText);
+  }
   openDropdown(what, index);
+};
+
+const actionItemsSearch = (
+  obj: GroupedData,
+  searchTerm: string
+): GroupedData => {
+  const result: GroupedData = {};
+  const objCopy: GroupedData = JSON.parse(JSON.stringify(obj));
+  for (const category in objCopy) {
+    const matchedItems = objCopy[category].filter((item) => {
+      return (
+        item.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+        category?.toLowerCase()?.includes(searchTerm.toLowerCase())
+      );
+    });
+    if (matchedItems.length > 0) {
+      result[category] = matchedItems;
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : allActionItems.value;
 };
 
 const noDropdown = (filter?: string) => {
@@ -939,9 +1100,10 @@ const dataWithConvertedOptions = convertOptionToArray(
   addOptionsToData() as DataItem[]
 );
 const groupedData = groupDataByCategory(dataWithConvertedOptions);
-const actionItems = ref(groupedData);
+const allActionItems = ref(groupedData);
+const actionItems = ref({ ...allActionItems.value });
 
-// console.log(groupedData);
+// console.log(actionItems.value, allActionItems.value);
 
 const labelMap = (inputType?: string) => {
   const map: { [x: string]: string } = {
@@ -1019,18 +1181,18 @@ const fetchSegmentData = async () => {
   fetch(url)
     .then((response) => response.json())
     .then((result) => {
-      if (!result) {
+      if (!result.ok) {
         loading.value = false;
         return;
       }
       if (props.data?.name === "Session Tag") {
         sectionTags.value = result;
-        allDropdownItems.value = Object.keys(sectionTags.value);
+        allDropdownItems.value = Object.keys(sectionTags.value || {});
         dropdownItems.value = allDropdownItems.value;
       }
       if (props.data?.name === "Partners") {
         partners.value = result;
-        allDropdownItems.value = partners.value.partners;
+        allDropdownItems.value = partners.value?.partners || [];
         dropdownItems.value = allDropdownItems.value;
       } else {
         dropdownItems.value = result;
@@ -1038,8 +1200,8 @@ const fetchSegmentData = async () => {
       // console.log(result);
       loading.value = false;
     })
-    .catch((error) => {
-      console.error(error);
+    .catch(() => {
+      // console.log({ error });
       loading.value = false;
     });
 };
@@ -1372,7 +1534,27 @@ input:target {
                 line-height: 18px; /* 138.462% */
                 transition: all 0.3s ease-in-out;
                 &:hover {
-                  background: #fff3f3da;
+                  background: #03c191;
+                  color: #fff;
+
+                  .help_icon_inner {
+                    img {
+                      filter: invert(100%);
+                    }
+                  }
+                }
+
+                .help_icon_inner {
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 20px;
+                  transition: all 0.3s ease-in-out;
+
+                  img {
+                    height: 16px;
+                    transition: all 0.3s ease-in-out;
+                  }
                 }
               }
             }

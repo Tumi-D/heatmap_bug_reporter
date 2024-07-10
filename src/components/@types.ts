@@ -32,6 +32,7 @@ export type AllData = {
   defaultOpen: boolean;
   valueOpen: boolean;
   segment?: string | null;
+  name?: string;
 };
 
 export interface SessionDataItem {
@@ -43,6 +44,7 @@ export interface SessionDataItem {
   notDone?: boolean; // Optional property
   isDefinitionValueSet?: boolean; // Optional property
   showSign?: boolean; // Optional property
+  rawValues?: any[];
 }
 
 export interface ECommerceDataItem {
@@ -57,6 +59,9 @@ export interface ECommerceDataItem {
 
 interface CompareName {
   nameForCompare?: string;
+  rawValues?: any;
+  edit?: boolean;
+  filterId?: string;
 }
 
 export type CombinedFilter = (SessionDataItem | ECommerceDataItem) &
@@ -82,4 +87,12 @@ export interface Experiments {
 export interface Partner {
   partners: string[];
   experiments: Experiments;
+}
+
+export interface CustomValues {
+  action: string;
+  default: string;
+  name: string;
+  segment: string;
+  value: string;
 }

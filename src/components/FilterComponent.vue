@@ -121,6 +121,17 @@
                     alt=""
                   />
                   <p class="filter_body_filter_text">{{ data.name }}</p>
+                  <div
+                    title="edit"
+                    class="edit_icon_wrapper"
+                    @click.stop="editCustomFilter(data)"
+                  >
+                    <img
+                      class="filter_image edit_icon"
+                      :src="getImagePath(editIcon)"
+                      alt=""
+                    />
+                  </div>
                 </li>
               </template>
               <div class="add_custom_filter" @click="onAddCustomFilter()">
@@ -164,6 +175,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, defineEmits, onMounted } from "vue";
 import task from "../assets/images/task.svg";
+import editIcon from "../assets/images/edit-icon.svg";
 
 import FilterModal from "./FilterModal.vue";
 import { CombinedFilter, SessionDataItem } from "./@types";
@@ -174,9 +186,9 @@ type SelectIndicators = {
   pendingList: CombinedFilter[];
 };
 
-type Item = { name: string; definition: string };
+type Item = { name: string; definition: string; rawValues: any };
 
-export type ReturnData = { definition: string; name: string };
+export type ReturnData = { definition: string; name: string; rest?: any };
 
 const props = defineProps<{
   onToggleShowFilterMenu: () => void;
@@ -200,6 +212,7 @@ const modalData = ref<CombinedFilter>();
 const resetClicked = ref(false);
 const disabledComparison = ref(false);
 const defaultSelections = ref<ReturnData[]>();
+const pendingName = ref("");
 
 function getImagePath(filename: string) {
   return filename;
@@ -222,7 +235,8 @@ function setActive(filter: CombinedFilter) {
   defaultSelections.value = [];
   if (!filter.isDefinitionValueSet) {
     showSelectModal.value = true;
-    modalData.value = { ...modalData.value, ...filter };
+    if (!filter?.showSign) filter.showSign = false;
+    modalData.value = { ...modalData.value, ...filter, edit: false };
   } else {
     selectIndicators.value.active = filter;
     if (selectIndicators.value.pendingList.length === 1) {
@@ -257,9 +271,12 @@ function onCompareWith(fromModal?: boolean) {
       : selectIndicators.value.active!;
     selectIndicators.value.pendingList = [
       ...selectIndicators.value.pendingList,
-      filter,
+      { ...filter, nameForCompare: pendingName.value },
     ];
     selectIndicators.value.active = undefined;
+  }
+  if (modalData.value) {
+    modalData.value = { ...modalData.value, nameForCompare: pendingName.value };
   }
   updateNames(selectIndicators.value.pendingList);
 }
@@ -282,6 +299,7 @@ function resetAllFilters(click?: boolean, enable?: boolean) {
   selectIndicators.value.active = undefined;
   selectIndicators.value.pendingList = [];
   defaultSelections.value = [];
+  modalData.value = undefined;
   if (enable) resetClicked.value = true;
   if (click) emit("reset-all-filters");
 }
@@ -327,6 +345,7 @@ function onItemSelected(item: Item, custom: boolean) {
         name: item.name,
         title: item.name,
         isDefinitionValueSet: true,
+        rawValues: item.rawValues,
       },
     ];
 
@@ -337,13 +356,17 @@ function onItemSelected(item: Item, custom: boolean) {
   }
 
   if (modalData.value) {
-    modalData.value = {
-      ...modalData.value,
-      nameForCompare: item.name,
-      definition: `${item.definition}`,
-    };
+    pendingName.value = item.name;
+    modalData.value = { ...modalData.value, definition: `${item.definition}` };
+    if (item.rawValues) {
+      modalData.value = { ...modalData.value, rawValues: item.rawValues };
+    }
     selectIndicators.value.active = modalData.value;
     if (selectIndicators.value.pendingList.length === 1 && !custom) {
+      selectIndicators.value.active = {
+        ...modalData.value,
+        nameForCompare: pendingName.value,
+      };
       onCompareWith(true);
     }
   }
@@ -360,11 +383,23 @@ function onCompare() {
   const returnData = selectIndicators.value.pendingList.map((d) => ({
     definition: d.definition,
     name: d.name,
+    rest: d.rawValues,
   }));
   emit("filter-values", returnData);
   resetAllFilters();
   props.onToggleShowFilterMenu();
 }
+
+const editCustomFilter = (filter: SessionDataItem) => {
+  filter.showSign = true;
+  modalData.value = {
+    ...filter,
+    name: "Create Custom Filter",
+    edit: true,
+    iconSrc: editIcon,
+  };
+  showSelectModal.value = true;
+};
 
 watch(
   () => props.defaultValues,
@@ -412,7 +447,7 @@ onMounted(() => {
   align-items: flex-start;
   border-radius: var(--horizontal-padding-lg, 12px);
   border: 1px solid var(--Grey-200, #e6e7e8);
-  background: var(--Grey-White, #fff);
+  background-color: var(--Grey-White, #fff);
   box-shadow: 0px 1px 2px 0px rgba(26, 40, 53, 0.09);
 
   p,
@@ -487,10 +522,12 @@ onMounted(() => {
         .filter_body_filters {
           display: flex;
           flex-direction: column;
+          gap: 2px;
           align-items: flex-start;
           align-self: stretch;
 
           .filter_body_filter {
+            position: relative;
             display: flex;
             padding: 10px 6px;
             align-items: center;
@@ -506,9 +543,37 @@ onMounted(() => {
               height: 18px;
               width: 18px;
             }
+            .edit_icon_wrapper {
+              position: absolute;
+              right: 8px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              visibility: hidden;
+              opacity: 0;
+              padding: 4px;
+              height: 24px;
+              width: 24px;
+              /* background-color: rgba(100, 99, 99, 0.705); */
+              border-radius: 50%;
+              z-index: 9;
+              cursor: pointer;
+              transition: all 0.3 ease-in-out;
+              .edit_icon {
+                height: 12px !important;
+                transition: all 0.3 ease-in-out;
+              }
+            }
 
             &:hover {
-              background: #e6e7e8;
+              .edit_icon_wrapper {
+                visibility: visible;
+                opacity: 1;
+                .edit_icon {
+                  border-radius: 20px;
+                }
+              }
+              background-color: #e6e7e8;
               /* .filter_body_filter_text {
                 color: #fff;
               } */
@@ -540,7 +605,7 @@ onMounted(() => {
               }
             }
             &.activeClass {
-              background: #03c191 !important;
+              background-color: #03c191 !important;
               .filter_body_filter_text {
                 color: #fff !important;
               }
@@ -565,13 +630,14 @@ onMounted(() => {
             padding: 7px 6px;
             align-items: center;
             gap: 8px;
+            height: 38px;
             align-self: stretch;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
 
             &:hover {
-              background: #e6e7e8;
+              background-color: #e6e7e8;
               /* .add_custom_filter_text {
                 color: #fff;
               } */
@@ -599,7 +665,7 @@ onMounted(() => {
     align-self: stretch;
     border-radius: 0px 0px 12px 12px;
     border: 1px solid var(--Grey-200, #e6e7e8);
-    background: var(--Grey-White, #fff);
+    background-color: var(--Grey-White, #fff);
 
     .left_button {
       display: flex;
@@ -608,7 +674,7 @@ onMounted(() => {
       align-items: flex-start;
       gap: 10px;
       border-radius: var(--Padding-Corner, 6px);
-      background: var(--Grey-100, #f6f6f6);
+      background-color: var(--Grey-100, #f6f6f6);
       box-shadow: 0px 1px 2px 0px rgba(26, 40, 53, 0.09);
       cursor: pointer;
 
@@ -644,14 +710,14 @@ onMounted(() => {
     }
 
     &.new_color {
-      background: var(--Primary-03-Main, #00936f);
+      background-color: var(--Primary-03-Main, #00936f);
       .right_button_text {
         color: var(--Grey-White, #fff);
       }
     }
 
     &.awaiting {
-      background: var(--Grey-100, #f6f6f6);
+      background-color: var(--Grey-100, #f6f6f6);
       border: 1.5px solid var(--Primary-03-Main, #f6f6f6);
       padding: 6px 10px;
       .right_button_text {
