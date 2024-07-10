@@ -17,13 +17,13 @@ export default defineComponent({
 
 <style scoped>
 .loader {
-  border: 8px solid #f3f3f3;
+  border: 4px solid #f3f3f3;
   border-radius: 50%;
-  border-top: 8px solid #D1FAE691;
+  border-top: 8px solid #d1fae691;
   border-right: 8px solid #00946f91;
   border-bottom: 8px solid #ff634791;
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   -webkit-animation: spin 1s linear infinite;
   animation: spin 1s linear infinite;
 }

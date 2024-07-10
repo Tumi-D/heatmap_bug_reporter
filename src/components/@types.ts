@@ -45,6 +45,7 @@ export interface SessionDataItem {
   isDefinitionValueSet?: boolean; // Optional property
   showSign?: boolean; // Optional property
   rawValues?: any[];
+  id?: string;
 }
 
 export interface ECommerceDataItem {
@@ -61,7 +62,7 @@ interface CompareName {
   nameForCompare?: string;
   rawValues?: any;
   edit?: boolean;
-  filterId?: string;
+  id?: string;
 }
 
 export type CombinedFilter = (SessionDataItem | ECommerceDataItem) &

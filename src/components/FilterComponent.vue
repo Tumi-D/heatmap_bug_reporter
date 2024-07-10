@@ -5,6 +5,7 @@
         v-if="showSelectModal"
         :closeSelectModal="closeSelectModal"
         :data="modalData"
+        :savedFilters="savedFilters"
         @item-selected="onItemSelected"
       />
       <div
@@ -98,7 +99,10 @@
               <p class="filter_body_column_head_text">Custom Filters</p>
             </header>
             <ul class="filter_body_filters">
-              <template v-if="customData.length > 0">
+              <div v-if="loading" class="loader_wrapper main_page">
+                <LoadingSpinner />
+              </div>
+              <template v-if="!loading && customData.length > 0">
                 <li
                   v-for="data in customData"
                   :key="data.name"
@@ -120,7 +124,7 @@
                     :src="getImagePath(data.iconSrc)"
                     alt=""
                   />
-                  <p class="filter_body_filter_text">{{ data.name }}</p>
+                  <p class="filter_body_filter_text">{{ data.title }}</p>
                   <div
                     title="edit"
                     class="edit_icon_wrapper"
@@ -176,7 +180,7 @@
 import { ref, computed, watch, defineEmits, onMounted } from "vue";
 import task from "../assets/images/task.svg";
 import editIcon from "../assets/images/edit-icon.svg";
-
+import LoadingSpinner from "./LoadingSpinner.vue";
 import FilterModal from "./FilterModal.vue";
 import { CombinedFilter, SessionDataItem } from "./@types";
 import { eCommerceData, sessionData } from "./data";
@@ -186,7 +190,7 @@ type SelectIndicators = {
   pendingList: CombinedFilter[];
 };
 
-type Item = { name: string; definition: string; rawValues: any };
+type Item = { name: string; definition: string; rawValues: any; id?: string };
 
 export type ReturnData = { definition: string; name: string; rest?: any };
 
@@ -207,12 +211,15 @@ const selectIndicators = ref<SelectIndicators>({
   pendingList: [],
 });
 
+const currentUrl = ref(window.location.href);
 const showSelectModal = ref(false);
 const modalData = ref<CombinedFilter>();
 const resetClicked = ref(false);
 const disabledComparison = ref(false);
 const defaultSelections = ref<ReturnData[]>();
 const pendingName = ref("");
+const loading = ref<boolean>(false);
+const savedFilters = ref<string[]>();
 
 function getImagePath(filename: string) {
   return filename;
@@ -336,23 +343,32 @@ const disableCompareButton = computed(() => {
 
 function onItemSelected(item: Item, custom: boolean) {
   if (custom) {
-    customData.value = [
-      ...customData.value,
-      {
-        definition: item.definition,
-        iconSrc: task,
-        idsegment: 2,
-        name: item.name,
-        title: item.name,
-        isDefinitionValueSet: true,
-        rawValues: item.rawValues,
-      },
-    ];
-
-    localStorage.setItem(
-      "heatmap-custom-filters",
-      JSON.stringify(customData.value)
-    );
+    let changed = false;
+    customData.value = customData.value.map((filter) => {
+      if (filter.id === item.id) {
+        changed = true;
+        return {
+          ...filter,
+          title: item.name,
+          definition: item.definition,
+          rawValues: item.rawValues,
+        };
+      }
+      return filter;
+    });
+    if (changed)
+      customData.value = [
+        {
+          definition: item.definition,
+          iconSrc: task,
+          idsegment: 2,
+          name: item.name,
+          title: item.name,
+          isDefinitionValueSet: true,
+          rawValues: item.rawValues,
+        },
+        ...customData.value,
+      ];
   }
 
   if (modalData.value) {
@@ -409,16 +425,63 @@ watch(
   { immediate: true }
 );
 
+const getItemFromUrl = (item: string) => {
+  const parsedUrl = new URL(currentUrl.value);
+  const searchParams = new URLSearchParams(parsedUrl.search);
+  const hashParams = new URLSearchParams(parsedUrl.hash.slice(1));
+
+  return searchParams.get(item) || hashParams.get(item);
+};
+
+const fetchCustomFilters = async () => {
+  loading.value = true;
+  const body = JSON.stringify({
+    idSite: getItemFromUrl("idSite"),
+    deviceType: getItemFromUrl("deviceType"),
+    idSiteHsr: getItemFromUrl("idSiteHsr"),
+  });
+
+  const requestOptions = { method: "POST", body };
+
+  const url =
+    "/index.php?module=API&format=json&method=API.processCustomFilters";
+
+  fetch(url, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      if (!result) {
+        loading.value = false;
+        return;
+      }
+      if (result.message) {
+        customData.value = result.message.map((data: any) => ({
+          definition: data.definition,
+          iconSrc: task,
+          idsegment: 2,
+          name: data.title,
+          title: data.title,
+          isDefinitionValueSet: true,
+          rawValues: data.data,
+          ...data,
+        }));
+        savedFilters.value = result.message.map((filter: any) => filter.title);
+      }
+      loading.value = false;
+    })
+    .catch((error) => {
+      console.log({ error });
+      loading.value = false;
+    });
+};
+
 onMounted(() => {
   resetAllFilters();
-  const savedFilters = localStorage.getItem("heatmap-custom-filters");
-  if (savedFilters) customData.value = JSON.parse(savedFilters);
-
+  fetchCustomFilters();
   document.addEventListener("reset-all-filters-event", () => {
     resetAllFilters(true);
   });
   document.addEventListener("disable-comparison-event", (event: any) => {
-    console.log(event.detail.disabled);
+    // console.log(event.detail.disabled);
     disabledComparison.value = event.detail.disabled;
   });
 });
@@ -591,6 +654,10 @@ onMounted(() => {
               font-weight: 500;
               line-height: 12px; /* 100% */
               transition: all 0.3s ease-in-out;
+              text-overflow: ellipsis;
+              overflow: hidden;
+              width: 138px;
+              white-space: break-spaces;
             }
 
             &.pendingClass {
@@ -772,6 +839,20 @@ onMounted(() => {
     }
     100% {
       box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    }
+  }
+
+  .loader_wrapper.main_page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    width: 100%;
+
+    .loader {
+      height: 40px !important;
+      width: 40px !important;
+      border-width: 4px !important;
     }
   }
 }

@@ -397,93 +397,12 @@ const conditions = {
   Contains: "&&",
 };
 
-const items: string[] = [
-  "https://thejellybee.com/pages/landing-page",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies",
-  "https://thejellybee.com",
-  "https://thejellybee.com/pages/main-lp",
-  "https://thejellybee.com/pages/report-page",
-  "https://thejellybee.com/pages/collagen-gummies",
-  "https://thejellybee.com/products/turmeric-ginger-gummies",
-  "https://thejellybee.com/pages/joint-support-bundle",
-  "https://thejellybee.com/pages/apple-cider-vinegar-gummies",
-  "https://thejellybee.com/pages/report-page-v2",
-  "https://thejellybee.com/products/collagen-gummies",
-  "https://thejellybee.com/pages/reviews",
-  "https://thejellybee.com/cart",
-  "https://thejellybee.com/policies/privacy-policy",
-  "https://thejellybee.com/policies/shipping-policy",
-  "https://thejellybee.com/collections/jellybee-products",
-  "https://thejellybee.com/products/turmeric-ginger-30",
-  "https://thejellybee.com/policies/terms-of-service",
-  "https://thejellybee.com/a/track",
-  "https://thejellybee.com/products/collagen-gummies-buy-2-get-1-free-1",
-  "file://c:/users/15406/desktop/5+reasons+why+you+need+to+try+autobrush.html",
-  "https://thejellybee.com/pages/quiz-1",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies-landing-page",
-  "https://thejellybee.com/pages/turmeric-offer-page7",
-  "https://thejellybee.com/products/black-friday-deal-collagen-gummies-buy-2-get-1-free",
-  "https://thejellybee.com/pages/turmeric-offer-page6",
-  "https://checkout.thejellybee.com/products/hibiscus",
-  "https://thejellybee.com/collections/all-1/products/collagen-gummies-buy-2-get-1-free-1",
-  "file://c:/users/luk_h/desktop/isbn+&+barcode+from+$22.99+-+authorized+us+isbn+agency+-+isbn+services.html",
-  "https://thejellybee.com/pages/bf2021-subscribe-page",
-  "https://thejellybee.com/pages/turmeric-offer-page5",
-  "https://thejellybee.com/pages/thejellybeesave20-subscribe-page",
-  "https://thejellybee.com/pages/vipbf2021-subscribe-page",
-  "https://thejellybee.com/pages/vip-black-friday-2021",
-  "https://thejellybee.com/collections/best-sellers/products/turmeric-ginger-gummies",
-  "https://thejellybee.com/account",
-  "https://thejellybee.com/collections/all/products/habits-that-relieve-stress-and-promote-harmony-in-your-life-ebook",
-  "https://thejellybee.com/collections/all/products/joint-health-101",
-  "https://thejellybee.com/products/turmeric-ginger-gummies-copy",
-  "https://thejellybee.com/collections/all-1/products/collagen-gummies-buy-2-get-1-free",
-  "https://thejellybee.com/collections/all/products/copy-of-turmeric-ginger-gummies-buy-2-get-1-free-1",
-  "https://thejellybee.com/pages/ashwagandha-gummies",
-  "https://thejellybee.com/pages/wholesale",
-  "https://thejellybee.com/products/jellybee-gift-card",
-  "https://thejellybee.com/pages/weekly",
-  "https://thejellybee.com/products/joint-support-bundle",
-  "https://thejellybee.com/products/copy-of-turmeric-ginger-gummies-buy-2-get-1-free",
-  "https://thejellybee.com/products/turmeric-ginger-gummies-buy-2-get-1-free",
-  "https://thejellybee.com/collections/all",
-  "https://thejellybee.com/apps/alchemy/element/preview",
-  "https://thejellybee.com/collections/all-1",
-  "https://thejellybee.com/pages/new-homepage",
-  "https://thejellybee.com/blogs/news",
-  "https://thejellybee.com/collections/jellybee-products/products/apple-cider-vinegar-gummies",
-  "https://thejellybee.com/pages/collagen-gummies-landing-page",
-  "https://thejellybee.com/challenge",
-  "https://thejellybee.com/collections/jellybee-products/products/joint-support-bundle",
-  "https://thejellybee.com/products/turmeric-ginger-gummies-20-off",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies)",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies-members-only",
-  "https://thejellybee.com/collections/best-sellers/products/turmeric-ginger-gummies",
-  "https://thejellybee.com/pages/copy-of-turmeric-ginger-gummies-28-04-2022",
-  "https://thejellybee.com/products/habits-that-relieve-stress-and-promote-harmony-in-your-life-ebook",
-  "https://thejellybee.com/pages/google-turmeric-ginger",
-  "https://thejellybee.com/products/turmeric-ginger-gummies-1",
-  "https://thejellybee.com/products/apple-cider-vinegar-gummies-so",
-  "https://thejellybee.com/pages/thejellybee",
-  "https://thejellybee.com/pages/5buckvoucher-subscribe-page",
-  "https://thejellybee.com/pages/quiz",
-  "https://thejellybee.com/shop",
-  "https://thejellybee.com/pages/free-turmeric-ginger-gummies",
-  "https://thejellybee.com/wpm@09be7fcfwb73c60f6p448fb3aema43d3ce0/web-pixel-21954725@6/sandbox/modern",
-  "https://thejellybee.com/pages/salespage19",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies-subscription",
-  "https://thejellybee.com/wpm@09be7fcfwb73c60f6p448fb3aema43d3ce0/web-pixel-21954725@9/sandbox/modern",
-  "https://thejellybee.com/pages/turmeric-ginger-gummies-single-bottles",
-  "https://thejellybee.com/pages/turmeric-offer-page3",
-  "https://thejellybee.com/pages/turmeric-ginger-new",
-  "https://thejellybee.com/pages/quiz-test",
-  "https://thejellybee.com/pages/collagen-offer-page1",
-  "https://thejellybee.com/pages/winyearlysupply-subscribe-page",
-];
+const items: string[] = [];
 
 const props = defineProps<{
   closeSelectModal: () => void;
   data?: CombinedFilter;
+  savedFilters?: string[];
 }>();
 
 const emit = defineEmits(["item-selected"]);
@@ -496,7 +415,7 @@ const getTextTitle = () => {
 
 const getTitle = (text?: string) => {
   let title = text;
-  if (props.data?.edit) title = `${text} (${props.data.title})`;
+  if (props.data?.edit) title = `Update Custom Filter (${props.data.title})`;
   return title;
 };
 
@@ -510,47 +429,8 @@ const currentUrl = ref(window.location.href);
 const allDropdownItems = ref(items);
 const allSecondOptions = ref<string[]>([]);
 const dropdownItems = ref(allDropdownItems.value);
-const sectionTags = ref({
-  variant: [],
-  utm_source: ["klarna", "Meta-SiteLink-179-0"],
-  utm_medium: ["paid", "referral"],
-  utm_content: ["120210339826690110"],
-  utm_term: ["120210339583610110"],
-  utm_campaign: ["120203706182330110", "klarna-merchantboost"],
-});
-const partners = ref<Partner>({
-  partners: ["intelligem", "visually"],
-  experiments: {
-    intelligem: [
-      {
-        value: "New Homepage - V2.1 - Control",
-        tag: "intelligem_variant",
-        variant_id: "New Homepage - V2.1 - Control",
-        experiment_id: null,
-      },
-      {
-        value: "New Homepage - V2.1 - New Homepage",
-        tag: "intelligem_variant",
-        variant_id: "New Homepage - V2.1 - New Homepage",
-        experiment_id: null,
-      },
-    ],
-    visually: [
-      {
-        value: "New Homepage",
-        tag: "visually_variant",
-        variant_id: "223454545",
-        experiment_id: "909939.8,38883.1004202096",
-      },
-      {
-        value: "New Hero",
-        tag: "visually_variant",
-        variant_id: "",
-        experiment_id: null,
-      },
-    ],
-  },
-});
+const sectionTags = ref();
+const partners = ref<Partner>();
 const _experiments = ref<Experiment[]>();
 const experiment = ref<Experiment>();
 const tagOptions = ref<string[]>();
@@ -592,7 +472,7 @@ if (props.data?.edit) {
   allData.value = allDataClone;
 }
 
-console.log(props.data);
+// console.log(props.savedFilters);
 
 const isElementTouchingBottom = (
   selector: string,
@@ -731,7 +611,7 @@ if (!(props.data?.name === "Session Tag" || props.data?.name === "Partners")) {
   tagOptions.value = undefined;
 }
 
-const innerItemSelected = (item: DataItem, index: number) => {
+const innerItemSelected = async (item: DataItem, index: number) => {
   allData.value = allData.value.map((data) =>
     data.index === index
       ? { ...data, action: item.name, segment: item.segment, name: item.name }
@@ -739,7 +619,18 @@ const innerItemSelected = (item: DataItem, index: number) => {
   );
   if (item.options) allActionValues.value.options = item.options;
   if (item.conditions) allActionValues.value.conditions = item.conditions;
+
+  if (props.data?.name === "Create Custom Filter") {
+    if (item.options?.length === 0) {
+      const options = await dynamicallyFetchOptions(item.segment!);
+      if (options) item.options = options;
+    }
+  }
+
+  // console.log(item);
+  // console.log(options);
   actionValue.value = item;
+
   closeDropdown();
 };
 
@@ -800,38 +691,35 @@ const next = () => {
 
     const dataToDb = JSON.stringify({
       data: restData,
-      title: props.data.title,
+      title: filterName.value,
       definition: returnData,
       idSite: getItemFromUrl("idSite"),
       deviceType: getItemFromUrl("deviceType"),
       idSiteHsr: getItemFromUrl("idSiteHsr"),
-      filterId: props.data.filterId,
+      filterId: props.data.id,
     });
 
-    const requestOptions = {
-      method: "POST",
-      body: dataToDb,
-    };
+    loading.value = true;
+    const requestOptions = { method: "POST", body: dataToDb };
 
     const url =
       "/index.php?module=API&format=json&method=API.processCustomFilters";
 
-    console.log({ dataToDb });
-
     fetch(url, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        if (!result.ok) {
+        if (result?.status !== "success") {
           loading.value = false;
           return;
         }
-        console.log(result);
+        // console.log(result);
         emit(
           "item-selected",
           {
             name: filterName.value,
             definition: returnData,
             rawValues: restData,
+            id: props.data?.id,
           },
           true
         );
@@ -841,8 +729,8 @@ const next = () => {
       .catch((error) => {
         console.log({ error });
         loading.value = false;
+        props.closeSelectModal();
       });
-
     return;
   } else {
     let returnData = "";
@@ -1032,14 +920,23 @@ const validateFilterName = () => {
   } else if ((filterName?.value?.length || 0) > 50) {
     filterNameErrorMessage.value =
       "Invalid input: Filter name cannot exceed 50 characters.";
+  } else if (
+    props.savedFilters?.includes(filterName?.value?.trim()) &&
+    !props.data?.edit
+  ) {
+    filterNameErrorMessage.value = "Invalid input: Filter name already exists.";
   }
-  return (filterName.value?.length || 0) < 3;
+  return (
+    (filterName.value?.length || 0) < 3 ||
+    (props.savedFilters?.includes(filterName?.value?.trim()) &&
+      !props.data?.edit)
+  );
 };
 
 const addCustomFilter = (condition: "and" | "or") => {
   const valid = validateFilterName();
   if (valid) return;
-
+  actionItems.value = { ...allActionItems.value };
   const index = allData.value[allData.value.length - 1].index + 1;
   allData.value = [
     ...allData.value,
@@ -1103,7 +1000,7 @@ const groupedData = groupDataByCategory(dataWithConvertedOptions);
 const allActionItems = ref(groupedData);
 const actionItems = ref({ ...allActionItems.value });
 
-// console.log(actionItems.value, allActionItems.value);
+// console.log(actionItems.value);
 
 const labelMap = (inputType?: string) => {
   const map: { [x: string]: string } = {
@@ -1167,6 +1064,8 @@ const getItemFromUrl = (item: string) => {
   return searchParams.get(item) || hashParams.get(item);
 };
 
+// /index.php?idSite=4&idSiteHsr=6278&method=API.getSuggestedValuesForSegment&module=API&segmentName=entryPageUrl
+
 const fetchSegmentData = async () => {
   loading.value = true;
   const [segmentName] = props.data?.definition?.split("==") || "";
@@ -1181,7 +1080,7 @@ const fetchSegmentData = async () => {
   fetch(url)
     .then((response) => response.json())
     .then((result) => {
-      if (!result.ok) {
+      if (!result) {
         loading.value = false;
         return;
       }
@@ -1189,8 +1088,7 @@ const fetchSegmentData = async () => {
         sectionTags.value = result;
         allDropdownItems.value = Object.keys(sectionTags.value || {});
         dropdownItems.value = allDropdownItems.value;
-      }
-      if (props.data?.name === "Partners") {
+      } else if (props.data?.name === "Partners") {
         partners.value = result;
         allDropdownItems.value = partners.value?.partners || [];
         dropdownItems.value = allDropdownItems.value;
@@ -1204,6 +1102,37 @@ const fetchSegmentData = async () => {
       // console.log({ error });
       loading.value = false;
     });
+};
+
+const useEntryPage = (segment: string) => {
+  return ["exitPageUrl", "entryPageUrl", "pageUrl"].includes(segment)
+    ? "entryPageUrl"
+    : segment;
+};
+
+const dynamicallyFetchOptions = async (segment?: string) => {
+  if (!segment) return;
+  loading.value = true;
+
+  const url = `/index.php?idSite=${getItemFromUrl(
+    "idSite"
+  )}&idSiteHsr=${getItemFromUrl(
+    "subcategory"
+  )}&method=API.getSuggestedValuesForSegment&module=API&segmentName=${useEntryPage(
+    segment
+  )}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return undefined;
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log({ error });
+    return undefined;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const makeRequestFor = (filter?: string): boolean => {
@@ -1346,6 +1275,10 @@ input:target {
         font-style: normal;
         font-weight: 700;
         line-height: 24px; /* 150% */
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 350px;
+        white-space: nowrap;
       }
     }
 
@@ -1536,6 +1469,10 @@ input:target {
                 &:hover {
                   background: #03c191;
                   color: #fff;
+
+                  p {
+                    color: #fff !important;
+                  }
 
                   .help_icon_inner {
                     img {
