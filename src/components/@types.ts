@@ -79,6 +79,7 @@ export interface Experiment {
   tag: string;
   variant_id: string;
   experiment_id: string | null;
+  url?: string;
 }
 
 export interface Experiments {
@@ -88,6 +89,8 @@ export interface Experiments {
 export interface Partner {
   partners: string[];
   experiments: Experiments;
+  partners_friendly: any;
+  partners_url: any;
 }
 
 export interface CustomValues {

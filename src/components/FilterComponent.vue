@@ -21,10 +21,12 @@
           </p>
           <template
             v-for="(filter, index) in selectIndicators.pendingList.slice(0, 2)"
-            :key="filter.name"
+            :key="filter.nameForCompare || filter.name"
           >
             <div class="right_button not_clickable new_color insideCompare">
-              <p class="right_button_text">{{ filter.name }}</p>
+              <p class="right_button_text">
+                {{ filter.nameForCompare || filter.name }}
+              </p>
             </div>
             <p v-if="index < 1" class="heat_custom_filter_header_text">to</p>
             <div
@@ -245,6 +247,7 @@ function setActive(filter: CombinedFilter) {
     if (!filter?.showSign) filter.showSign = false;
     modalData.value = { ...modalData.value, ...filter, edit: false };
   } else {
+    pendingName.value = "";
     selectIndicators.value.active = filter;
     if (selectIndicators.value.pendingList.length === 1) {
       onCompareWith();
@@ -306,6 +309,7 @@ function resetAllFilters(click?: boolean, enable?: boolean) {
   selectIndicators.value.active = undefined;
   selectIndicators.value.pendingList = [];
   defaultSelections.value = [];
+  pendingName.value = "";
   modalData.value = undefined;
   if (enable) resetClicked.value = true;
   if (click) emit("reset-all-filters");
@@ -343,10 +347,10 @@ const disableCompareButton = computed(() => {
 
 function onItemSelected(item: Item, custom: boolean) {
   if (custom) {
-    let changed = false;
+    let noChanges = true;
     customData.value = customData.value.map((filter) => {
       if (filter.id === item.id) {
-        changed = true;
+        noChanges = false;
         return {
           ...filter,
           title: item.name,
@@ -356,7 +360,7 @@ function onItemSelected(item: Item, custom: boolean) {
       }
       return filter;
     });
-    if (changed)
+    if (noChanges)
       customData.value = [
         {
           definition: item.definition,
@@ -396,11 +400,16 @@ function onCompare() {
   ) {
     selectIndicators.value.pendingList = [selectIndicators.value.active];
   }
-  const returnData = selectIndicators.value.pendingList.map((d) => ({
+  let returnData = selectIndicators.value.pendingList.map((d) => ({
     definition: d.definition,
-    name: d.name,
+    name: d.nameForCompare || d.name,
     rest: d.rawValues,
   }));
+  if (returnData.length === 1 && pendingName.value)
+    returnData = returnData.map((data) => ({
+      ...data,
+      name: pendingName.value,
+    }));
   emit("filter-values", returnData);
   resetAllFilters();
   props.onToggleShowFilterMenu();
@@ -430,7 +439,7 @@ const getItemFromUrl = (item: string) => {
   const searchParams = new URLSearchParams(parsedUrl.search);
   const hashParams = new URLSearchParams(parsedUrl.hash.slice(1));
 
-  return searchParams.get(item) || hashParams.get(item);
+  return searchParams.get(item) || hashParams.get(item) || "";
 };
 
 const fetchCustomFilters = async () => {
@@ -444,7 +453,7 @@ const fetchCustomFilters = async () => {
   const requestOptions = { method: "POST", body };
 
   const url =
-    "/index.php?module=API&format=json&method=API.processCustomFilters";
+    "https://stage14.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
 
   fetch(url, requestOptions)
     .then((response) => response.json())
@@ -505,7 +514,7 @@ onMounted(() => {
 .heat_custom_filter {
   position: relative;
   display: flex;
-  width: 612px;
+  min-width: 612px;
   flex-direction: column;
   align-items: flex-start;
   border-radius: var(--horizontal-padding-lg, 12px);
@@ -656,19 +665,23 @@ onMounted(() => {
               transition: all 0.3s ease-in-out;
               text-overflow: ellipsis;
               overflow: hidden;
-              width: 138px;
-              white-space: break-spaces;
+              /* width: 138px; */
+              /* white-space: break-spaces; */
             }
 
             &.pendingClass {
-              background-color: #44c291;
+              background-color: #ffffff;
               .filter_body_filter_text {
-                color: #fff;
+                color: #34404b;
               }
               .filter_image {
-                filter: invert(100%);
+                /* filter: invert(100%); */
                 height: 18px;
                 width: 18px;
+              }
+
+              &:hover {
+                background-color: #e6e7e8;
               }
             }
             &.activeClass {

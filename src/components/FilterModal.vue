@@ -245,8 +245,9 @@
                     :class="{ align_center: touchingBottom }"
                   >
                     <li
-                      v-for="option in tagOptions || actionValue?.options"
-                      :key="option"
+                      v-for="(option, index) in tagOptions ||
+                      actionValue?.options"
+                      :key="option + index"
                       class="dropdown_menu_item"
                       :class="{
                         activeClass:
@@ -419,10 +420,8 @@ const getTitle = (text?: string) => {
   return title;
 };
 
-// const getKeyByValue = (value: string): string =>
-//   Object.keys(conditions).find((key) =>
-//     value.includes((conditions as any)[key])
-//   ) || "";
+const getKeyByValue = (value: string, obj: any): string =>
+  Object.keys(obj).find((key) => value.includes((obj as any)[key])) || "";
 
 // const isDropdownOpen = ref({ default: false, action: false, value: false });
 const currentUrl = ref(window.location.href);
@@ -589,18 +588,25 @@ const selectItem = (
 
     if (what === "default" && props.data?.name === "Partners") {
       allSecondOptions.value =
-        (partners.value?.experiments as any)[item]?.map(
-          (d: Experiment) => d.value
+        (partners.value?.experiments as any)[
+          getKeyByValue(item, partners.value?.partners_friendly)
+        ]?.map((d: Experiment) =>
+          d.experiment_id ? d.experiment_id + " - " + d.value : d.value
         ) || [];
       tagOptions.value = allSecondOptions.value;
       allData.value[0].value = "";
-      _experiments.value = partners.value?.experiments?.[item];
+      _experiments.value =
+        partners.value?.experiments?.[
+          getKeyByValue(item, partners.value?.partners_friendly)
+        ];
     }
   }
 
   if (what === "value") {
     if (props.data?.name === "Partners") {
-      experiment.value = _experiments.value?.find((d) => d.value === item);
+      experiment.value = _experiments.value?.find(
+        (d) => d.value === extractDesiredPart(item)
+      );
     }
     inputValue.value = item;
   }
@@ -610,6 +616,12 @@ const selectItem = (
 if (!(props.data?.name === "Session Tag" || props.data?.name === "Partners")) {
   tagOptions.value = undefined;
 }
+
+const extractDesiredPart = (str: string): string => {
+  const regex = /^[^ -]+ - (.+)$/;
+  const match = str.match(regex);
+  return match ? match[1] : "";
+};
 
 const innerItemSelected = async (item: DataItem, index: number) => {
   allData.value = allData.value.map((data) =>
@@ -703,7 +715,7 @@ const next = () => {
     const requestOptions = { method: "POST", body: dataToDb };
 
     const url =
-      "/index.php?module=API&format=json&method=API.processCustomFilters";
+      "https://stage14.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
 
     fetch(url, requestOptions)
       .then((response) => response.json())
@@ -766,14 +778,17 @@ const next = () => {
       return;
     }
     if (props.data?.name === "Partners") {
-      const returnObj = { variantId: experiment.value?.variant_id };
+      const returnObj = {
+        variantId: experiment.value?.variant_id,
+        url: experiment.value?.url,
+      };
       returnData += `partnerName==${allData.value[0].default};friendlyName==${experiment.value?.value}`;
       if (experiment.value?.variant_id)
         returnData += `;variantId==${experiment.value?.variant_id}`;
       if (experiment.value?.experiment_id)
         returnData += `;experienceId==${experiment.value?.experiment_id}`;
       emit("item-selected", {
-        name: `${props.data?.name}: ${allData.value[0].default}`,
+        name: `${props.data?.name}: ${allData.value[0].value}`,
         definition: encodeURI(returnData),
         rawValues: returnObj,
       });
@@ -880,6 +895,8 @@ const filterItems = (what: "default" | "action" | "value", index: number) => {
   openDropdown(what, index);
 };
 
+// console.log(actionValue.value, tagOptions.value);
+
 const actionItemsSearch = (
   obj: GroupedData,
   searchTerm: string
@@ -910,27 +927,28 @@ const numberInput = (filter?: string) => {
 };
 
 const validateFilterName = () => {
-  filterNameError.value = (filterName.value?.length || 0) < 3;
+  let invalid = false;
   if (filterName?.value?.trim() === "") {
     filterNameErrorMessage.value =
       "Invalid input: Please enter a name for the filter.";
+    invalid = true;
   } else if ((filterName?.value?.length || 0) < 3) {
     filterNameErrorMessage.value =
       "Invalid input: Filter name must be more then 3 characters";
-  } else if ((filterName?.value?.length || 0) > 50) {
+    invalid = true;
+  } else if ((filterName?.value?.length || 0) > 40) {
     filterNameErrorMessage.value =
-      "Invalid input: Filter name cannot exceed 50 characters.";
+      "Invalid input: Filter name cannot exceed 40 characters.";
+    invalid = true;
   } else if (
     props.savedFilters?.includes(filterName?.value?.trim()) &&
     !props.data?.edit
   ) {
     filterNameErrorMessage.value = "Invalid input: Filter name already exists.";
+    invalid = true;
   }
-  return (
-    (filterName.value?.length || 0) < 3 ||
-    (props.savedFilters?.includes(filterName?.value?.trim()) &&
-      !props.data?.edit)
-  );
+  filterNameError.value = invalid;
+  return invalid;
 };
 
 const addCustomFilter = (condition: "and" | "or") => {
@@ -1061,7 +1079,7 @@ const getItemFromUrl = (item: string) => {
   const searchParams = new URLSearchParams(parsedUrl.search);
   const hashParams = new URLSearchParams(parsedUrl.hash.slice(1));
 
-  return searchParams.get(item) || hashParams.get(item);
+  return searchParams.get(item) || hashParams.get(item) || "";
 };
 
 // /index.php?idSite=4&idSiteHsr=6278&method=API.getSuggestedValuesForSegment&module=API&segmentName=entryPageUrl
@@ -1071,7 +1089,7 @@ const fetchSegmentData = async () => {
   const [segmentName] = props.data?.definition?.split("==") || "";
   // const token = localStorage.getItem("heatUserId");
 
-  const url = `/index.php?idSite=${getItemFromUrl(
+  const url = `https://stage14.heatmapcore.com/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
@@ -1090,9 +1108,13 @@ const fetchSegmentData = async () => {
         dropdownItems.value = allDropdownItems.value;
       } else if (props.data?.name === "Partners") {
         partners.value = result;
-        allDropdownItems.value = partners.value?.partners || [];
+        updateValuesForEachKey(partners.value?.experiments);
+        const keys = partners.value?.partners;
+        allDropdownItems.value =
+          keys?.map((key) => partners.value?.partners_friendly?.[key]) || [];
         dropdownItems.value = allDropdownItems.value;
       } else {
+        allDropdownItems.value = result;
         dropdownItems.value = result;
       }
       // console.log(result);
@@ -1114,7 +1136,7 @@ const dynamicallyFetchOptions = async (segment?: string) => {
   if (!segment) return;
   loading.value = true;
 
-  const url = `/index.php?idSite=${getItemFromUrl(
+  const url = `https://stage14.heatmapcore.com/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
@@ -1144,6 +1166,30 @@ const makeRequestFor = (filter?: string): boolean => {
     "Partners",
   ];
   return filter ? allowRequestList.includes(filter) : false;
+};
+
+const makeValuesUnique = (items: Experiment[]): Experiment[] => {
+  const valueCount: { [key: string]: number } = {};
+  return items.map((item) => {
+    const { value } = item;
+    if (valueCount[value]) {
+      valueCount[value]++;
+      item.value = `${value} (${valueCount[value]})`;
+    } else {
+      valueCount[value] = 1;
+    }
+    return item;
+  });
+};
+
+const updateValuesForEachKey = (obj: any): Experiment[] => {
+  const updatedObj: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      updatedObj[key] = makeValuesUnique(obj[key]);
+    }
+  }
+  return updatedObj;
 };
 
 onMounted(() => {
@@ -1627,7 +1673,7 @@ input:target {
 }
 
 .horizontal_line {
-  width: 360px;
+  width: 100%;
   height: 1px;
   background: var(--Grey-200, #e6e7e8);
   margin-top: 24px;
