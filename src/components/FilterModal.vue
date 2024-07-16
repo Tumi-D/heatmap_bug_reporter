@@ -111,7 +111,8 @@
                           :key="innerItem.name"
                           class="dropdown_menu_item inner_items"
                           :class="{
-                            activeClass: innerItem.name === actionValue?.name,
+                            activeClass:
+                              innerItem.name === item.actionValue?.name,
                           }"
                           @click="innerItemSelected(innerItem, item.index)"
                         >
@@ -168,13 +169,13 @@
                     v-show="
                       item.defaultOpen &&
                       noDropdown(data?.name) &&
-                      (actionValue?.conditions || dropdownItems).length > 0
+                      (item.actionValue?.conditions || dropdownItems).length > 0
                     "
                     class="dropdown_menu_wrapper"
                     :class="{ align_center: touchingBottom }"
                   >
                     <li
-                      v-for="condition in actionValue?.conditions ||
+                      v-for="condition in item.actionValue?.conditions ||
                       dropdownItems"
                       :key="condition"
                       class="dropdown_menu_item"
@@ -198,7 +199,7 @@
               <p class="dropdown_title">{{ SecondLabelMap(data?.name) }}</p>
               <div class="dropdown_body_wrapper">
                 <div
-                  v-if="actionValue?.options?.length || tagOptions?.length"
+                  v-if="item.actionValue?.options?.length || tagOptions?.length"
                   class="arrow_button_wrapper"
                   :class="{ we_have_error: item.valueError }"
                   @click="toggleDropdown('value', item.index)"
@@ -210,12 +211,12 @@
                   :class="{
                     second_one: data?.name === 'Average Order Value',
                     has_arrow:
-                      actionValue?.options?.length || tagOptions?.length,
+                      item.actionValue?.options?.length || tagOptions?.length,
                   }"
                   :type="
-                    actionValue?.options?.length
+                    item.actionValue?.options?.length
                       ? 'text'
-                      : actionValue?.option === 'number'
+                      : item.actionValue?.option === 'number'
                       ? 'number'
                       : 'text'
                   "
@@ -239,14 +240,14 @@
                   <ul
                     v-show="
                       item.valueOpen &&
-                      (actionValue?.options || tagOptions)?.length
+                      (item.actionValue?.options || tagOptions)?.length
                     "
                     class="dropdown_menu_wrapper"
                     :class="{ align_center: touchingBottom }"
                   >
                     <li
-                      v-for="(option, index) in tagOptions ||
-                      actionValue?.options"
+                      v-for="(option, index) in item.actionValue?.options ||
+                      tagOptions"
                       :key="option + index"
                       class="dropdown_menu_item"
                       :class="{
@@ -331,8 +332,16 @@
       </div>
       <footer class="filter_footer">
         <div class="footer_buttons">
-          <div class="footer_button" @click="cancel">
-            <p class="footer_button_text">Cancel</p>
+          <div class="flex_us">
+            <div class="footer_button" @click="cancel">
+              <p class="footer_button_text">Cancel</p>
+            </div>
+            <div
+              class="footer_button color_red_for_delete"
+              @click="deleteFilter"
+            >
+              <p class="footer_button_text">Delete</p>
+            </div>
           </div>
           <div
             class="footer_button primary_button"
@@ -442,7 +451,7 @@ const allActionValues = ref<{ conditions: string[]; options: string[] }>({
   conditions: [],
   options: [],
 });
-const actionValue = ref<DataItem>();
+// const actionValue = ref<DataItem>();
 const touchingBottom = ref(false);
 const allData = ref<AllData[]>([
   {
@@ -460,6 +469,7 @@ const allData = ref<AllData[]>([
     actionOpen: false,
     defaultOpen: false,
     valueOpen: false,
+    actionValue: undefined,
   },
 ]);
 
@@ -639,15 +649,44 @@ const innerItemSelected = async (item: DataItem, index: number) => {
     }
   }
 
-  // console.log(item);
-  // console.log(options);
-  actionValue.value = item;
-
+  const _index = allData.value.findIndex((data) => data.index === index);
+  if (_index > -1) allData.value[_index].actionValue = item;
   closeDropdown();
 };
 
 const cancel = () => {
   props.closeSelectModal();
+};
+
+const deleteFilter = () => {
+  const id = props.data?.id;
+  if (typeof id === "undefined") return;
+  const dataToDb = JSON.stringify({
+    idSite: getItemFromUrl("idSite"),
+    definition: "delete",
+    filterId: id,
+  });
+  loading.value = true;
+  const requestOptions = { method: "POST", body: dataToDb };
+  const url =
+    "https://stage14.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
+
+  fetch(url, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      if (result?.status !== "success") {
+        loading.value = false;
+        return;
+      }
+      emit("item-selected", { id: props.data?.id }, true);
+      loading.value = false;
+      props.closeSelectModal();
+    })
+    .catch((error) => {
+      console.log({ error });
+      loading.value = false;
+      props.closeSelectModal();
+    });
 };
 
 const getImagePath = (filename: string) => filename;
@@ -866,11 +905,15 @@ const filterItems = (what: "default" | "action" | "value", index: number) => {
     what
   ]?.toLowerCase();
 
+  const _index = allData.value.findIndex((data) => data.index === index);
+  // if (_index > 0)
+
   if (what === "default") {
-    if (actionValue.value?.conditions) {
-      actionValue.value.conditions = allActionValues.value?.conditions?.filter(
-        (item) => item.toLowerCase().includes(searchText)
-      );
+    if (allData.value[_index].actionValue?.conditions) {
+      allData.value[_index].actionValue!.conditions =
+        allActionValues.value?.conditions?.filter((item) =>
+          item.toLowerCase().includes(searchText)
+        );
     } else {
       dropdownItems.value = allDropdownItems.value.filter((item) =>
         item.toLowerCase().includes(searchText)
@@ -879,10 +922,11 @@ const filterItems = (what: "default" | "action" | "value", index: number) => {
   }
 
   if (what === "value") {
-    if (actionValue.value?.options) {
-      actionValue.value.options = allActionValues.value?.options?.filter(
-        (item) => item.toLowerCase().includes(searchText)
-      );
+    if (allData.value[_index].actionValue?.options) {
+      allData.value[_index].actionValue!.options =
+        allActionValues.value?.options?.filter((item) =>
+          item.toLowerCase().includes(searchText)
+        );
     } else {
       tagOptions.value = allSecondOptions.value.filter((item) =>
         item.toLowerCase().includes(searchText)
@@ -1624,6 +1668,19 @@ input:target {
     }
   }
 }
+
+.color_red_for_delete {
+  background-color: tomato !important;
+  transition: all 0.3s ease-in-out;
+  .footer_button_text {
+    color: var(--Grey-White, #fff) !important;
+  }
+
+  &:hover {
+    background-color: #b71e2d !important;
+  }
+}
+
 .remove_action_wrapper {
   display: flex;
   width: 100%;
@@ -1777,5 +1834,11 @@ input:target {
 .disabled_me {
   opacity: 0.5;
   cursor: not-allowed !important;
+}
+
+.flex_us {
+  display: flex;
+  gap: 2px;
+  align-items: center;
 }
 </style>

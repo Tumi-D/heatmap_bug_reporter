@@ -33,6 +33,7 @@ export type AllData = {
   valueOpen: boolean;
   segment?: string | null;
   name?: string;
+  actionValue?: DataItem;
 };
 
 export interface SessionDataItem {

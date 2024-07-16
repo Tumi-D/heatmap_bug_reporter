@@ -346,6 +346,12 @@ const disableCompareButton = computed(() => {
 });
 
 function onItemSelected(item: Item, custom: boolean) {
+  if (!item.name) {
+    customData.value = customData.value.filter(
+      (filter) => filter.id !== item.id
+    );
+    return;
+  }
   if (custom) {
     let noChanges = true;
     customData.value = customData.value.map((filter) => {
@@ -616,7 +622,7 @@ onMounted(() => {
               width: 18px;
             }
             .edit_icon_wrapper {
-              position: absolute;
+              /* position: absolute; */
               right: 8px;
               display: flex;
               justify-content: center;
@@ -624,7 +630,7 @@ onMounted(() => {
               visibility: hidden;
               opacity: 0;
               padding: 4px;
-              height: 24px;
+              height: 18px;
               width: 24px;
               /* background-color: rgba(100, 99, 99, 0.705); */
               border-radius: 50%;
