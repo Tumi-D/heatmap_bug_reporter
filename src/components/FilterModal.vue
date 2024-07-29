@@ -337,6 +337,7 @@
               <p class="footer_button_text">Cancel</p>
             </div>
             <div
+              v-if="props.data?.edit"
               class="footer_button color_red_for_delete"
               @click="deleteFilter"
             >
@@ -614,6 +615,8 @@ const selectItem = (
 
   if (what === "value") {
     if (props.data?.name === "Partners") {
+      console.log(_experiments.value, extractDesiredPart(item));
+
       experiment.value = _experiments.value?.find(
         (d) => d.value === extractDesiredPart(item)
       );
@@ -630,7 +633,7 @@ if (!(props.data?.name === "Session Tag" || props.data?.name === "Partners")) {
 const extractDesiredPart = (str: string): string => {
   const regex = /^[^ -]+ - (.+)$/;
   const match = str.match(regex);
-  return match ? match[1] : "";
+  return match ? match[1] : str;
 };
 
 const innerItemSelected = async (item: DataItem, index: number) => {
@@ -669,7 +672,7 @@ const deleteFilter = () => {
   loading.value = true;
   const requestOptions = { method: "POST", body: dataToDb };
   const url =
-    "https://stage14.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
+    "/index.php?module=API&format=json&method=API.processCustomFilters";
 
   fetch(url, requestOptions)
     .then((response) => response.json())
@@ -754,7 +757,7 @@ const next = () => {
     const requestOptions = { method: "POST", body: dataToDb };
 
     const url =
-      "https://stage14.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
+      "/index.php?module=API&format=json&method=API.processCustomFilters";
 
     fetch(url, requestOptions)
       .then((response) => response.json())
@@ -821,6 +824,7 @@ const next = () => {
         variantId: experiment.value?.variant_id,
         url: experiment.value?.url,
       };
+
       returnData += `partnerName==${allData.value[0].default};friendlyName==${experiment.value?.value}`;
       if (experiment.value?.variant_id)
         returnData += `;variantId==${experiment.value?.variant_id}`;
@@ -1133,7 +1137,7 @@ const fetchSegmentData = async () => {
   const [segmentName] = props.data?.definition?.split("==") || "";
   // const token = localStorage.getItem("heatUserId");
 
-  const url = `https://stage14.heatmapcore.com/index.php?idSite=${getItemFromUrl(
+  const url = `/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
@@ -1180,7 +1184,7 @@ const dynamicallyFetchOptions = async (segment?: string) => {
   if (!segment) return;
   loading.value = true;
 
-  const url = `https://stage14.heatmapcore.com/index.php?idSite=${getItemFromUrl(
+  const url = `/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
