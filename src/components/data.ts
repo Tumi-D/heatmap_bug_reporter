@@ -9,6 +9,8 @@ import addShoppingCart from "../assets/images/add_shopping_cart.svg";
 import payments from "../assets/images/payments.svg";
 import task from "../assets/images/task.svg";
 import partner from "../assets/images/timeline.svg";
+import session from '../assets/images/sessiontag.svg'
+import nonPur from '../assets/images/Non-purchasers.svg'
 
 export const sessionData: SessionDataItem[] = [
   {
@@ -28,7 +30,7 @@ export const sessionData: SessionDataItem[] = [
   },
   {
     definition: "sessionTagName==;sessionTagValue==",
-    iconSrc: flightLand,
+    iconSrc: session,
     idsegment: 0,
     name: "Session Tag",
     title: "QuickFilter-SessionTag",
@@ -85,7 +87,7 @@ export const eCommerceData: ECommerceDataItem[] = [
   },
   {
     definition: "revenueOrder==0",
-    iconSrc: addShoppingCart,
+    iconSrc: nonPur,
     idsegment: 0,
     name: "Non Purchasers",
     title: "QuickFilter-Non-Purchasers",

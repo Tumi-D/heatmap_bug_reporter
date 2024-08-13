@@ -150,7 +150,7 @@
       <div class="heat_custom_filter_footer">
         <div class="left_button">
           <p class="left_button_text" @click="resetAllFilters(false, true)">
-            Reset
+            Clear Filters
           </p>
         </div>
         <div class="right_buttons">
@@ -311,7 +311,11 @@ function resetAllFilters(click?: boolean, enable?: boolean) {
   defaultSelections.value = [];
   pendingName.value = "";
   modalData.value = undefined;
-  if (enable) resetClicked.value = true;
+  if (enable) {
+    resetClicked.value = true;
+    emit("filter-values", []);
+    props.onToggleShowFilterMenu();
+  }
   if (click) emit("reset-all-filters");
 }
 
