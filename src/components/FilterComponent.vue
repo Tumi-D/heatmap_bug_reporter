@@ -463,7 +463,7 @@ const fetchCustomFilters = async () => {
   const requestOptions = { method: "POST", body };
 
   const url =
-    "/index.php?module=API&format=json&method=API.processCustomFilters";
+    "https://stage1.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
 
   fetch(url, requestOptions)
     .then((response) => response.json())

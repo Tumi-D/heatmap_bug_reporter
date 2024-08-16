@@ -672,7 +672,7 @@ const deleteFilter = () => {
   loading.value = true;
   const requestOptions = { method: "POST", body: dataToDb };
   const url =
-    "/index.php?module=API&format=json&method=API.processCustomFilters";
+    "https://stage1.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
 
   fetch(url, requestOptions)
     .then((response) => response.json())
@@ -757,7 +757,7 @@ const next = () => {
     const requestOptions = { method: "POST", body: dataToDb };
 
     const url =
-      "/index.php?module=API&format=json&method=API.processCustomFilters";
+      "https://stage1.heatmapcore.com/index.php?module=API&format=json&method=API.processCustomFilters";
 
     fetch(url, requestOptions)
       .then((response) => response.json())
@@ -812,9 +812,13 @@ const next = () => {
         ";"
       ) as string[];
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
+      const returnObj = {
+        url: `?${currentData.default}=${currentData.value.replace(/\?/g, '&')}`
+      };
       emit("item-selected", {
         name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,
         definition: encodeURI(returnData),
+        rawValues: currentData.default == 'variant' ? returnObj : '',
       });
       props.closeSelectModal();
       return;
@@ -1130,14 +1134,14 @@ const getItemFromUrl = (item: string) => {
   return searchParams.get(item) || hashParams.get(item) || "";
 };
 
-// /index.php?idSite=4&idSiteHsr=6278&method=API.getSuggestedValuesForSegment&module=API&segmentName=entryPageUrl
+// https://stage1.heatmapcore.com/index.php?idSite=4&idSiteHsr=6278&method=API.getSuggestedValuesForSegment&module=API&segmentName=entryPageUrl
 
 const fetchSegmentData = async () => {
   loading.value = true;
   const [segmentName] = props.data?.definition?.split("==") || "";
   // const token = localStorage.getItem("heatUserId");
 
-  const url = `/index.php?idSite=${getItemFromUrl(
+  const url = `https://stage1.heatmapcore.com/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
@@ -1184,7 +1188,7 @@ const dynamicallyFetchOptions = async (segment?: string) => {
   if (!segment) return;
   loading.value = true;
 
-  const url = `/index.php?idSite=${getItemFromUrl(
+  const url = `https://stage1.heatmapcore.com/index.php?idSite=${getItemFromUrl(
     "idSite"
   )}&idSiteHsr=${getItemFromUrl(
     "subcategory"
