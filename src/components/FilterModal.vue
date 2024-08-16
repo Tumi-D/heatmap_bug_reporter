@@ -813,12 +813,20 @@ const next = () => {
       ) as string[];
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
       const returnObj = {
-        url: `?${currentData.default}=${currentData.value.replace(/\?/g, '&')}`
+        url: `?${currentData.default}=${String(currentData.value).replace(
+          /\?/g,
+          "&"
+        )}`,
       };
+      console.log(
+        "return data: ",
+        currentData.default == "variant" ? returnObj : ""
+      );
+
       emit("item-selected", {
         name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,
         definition: encodeURI(returnData),
-        rawValues: currentData.default == 'variant' ? returnObj : '',
+        rawValues: currentData.default == "variant" ? returnObj : "",
       });
       props.closeSelectModal();
       return;
