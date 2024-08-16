@@ -813,10 +813,7 @@ const next = () => {
       ) as string[];
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
       const returnObj = {
-        url: `?${currentData.default}=${String(currentData.value).replace(
-          /\?/g,
-          "&"
-        )}`,
+        url: encodeURIComponent(`?${currentData.default}=${String(currentData.value).replace(/\?/g, "&")}`),
       };
       console.log(
         "return data: ",
