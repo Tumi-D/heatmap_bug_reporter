@@ -105,7 +105,7 @@ export const eCommerceData: ECommerceDataItem[] = [
     definition: "partnerName==",
     iconSrc: partner,
     idsegment: 0,
-    name: "Partners",
+    name: "A/B Tests",
     title: "partner-name",
     showSign: true,
   },

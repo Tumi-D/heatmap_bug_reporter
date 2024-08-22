@@ -597,7 +597,7 @@ const selectItem = (
         : data
     );
 
-    if (what === "default" && props.data?.name === "Partners") {
+    if (what === "default" && props.data?.name === "A/B Tests") {
       allSecondOptions.value =
         (partners.value?.experiments as any)[
           getKeyByValue(item, partners.value?.partners_friendly)
@@ -614,7 +614,7 @@ const selectItem = (
   }
 
   if (what === "value") {
-    if (props.data?.name === "Partners") {
+    if (props.data?.name === "A/B Tests") {
       console.log(_experiments.value, extractDesiredPart(item));
 
       experiment.value = _experiments.value?.find(
@@ -626,7 +626,7 @@ const selectItem = (
   closeDropdown();
 };
 
-if (!(props.data?.name === "Session Tag" || props.data?.name === "Partners")) {
+if (!(props.data?.name === "Session Tag" || props.data?.name === "A/B Tests")) {
   tagOptions.value = undefined;
 }
 
@@ -706,7 +706,7 @@ switch (props.data?.name) {
     dropdownItems.value = allDropdownItems.value;
     tagOptions.value = [];
     break;
-  case "Partners":
+  case "A/B Tests":
     allSecondOptions.value = partners.value?.partners || [];
     allDropdownItems.value = allSecondOptions.value;
     dropdownItems.value = allDropdownItems.value;
@@ -813,7 +813,12 @@ const next = () => {
       ) as string[];
       returnData = `${segmentName}${currentData.default};${segmentValue}${currentData.value}`;
       const returnObj = {
-        url: encodeURIComponent(`?${currentData.default}=${String(currentData.value).replace(/\?/g, "&")}`),
+        url: encodeURIComponent(
+          `?${currentData.default}=${String(currentData.value).replace(
+            /\?/g,
+            "&"
+          )}`
+        ),
       };
       console.log(
         "return data: ",
@@ -828,7 +833,7 @@ const next = () => {
       props.closeSelectModal();
       return;
     }
-    if (props.data?.name === "Partners") {
+    if (props.data?.name === "A/B Tests") {
       const returnObj = {
         variantId: experiment.value?.variant_id,
         url: experiment.value?.url,
@@ -897,7 +902,7 @@ const alreadySelected = (item: string) => {
   return (
     extractInfoFromUrl(item)?.trim() ===
       props.data?.nameForCompare?.replace(`${props.data.name}:`, "")?.trim() &&
-    !["Partners", "Session Tag"].includes(props.data.name)
+    !["A/B Tests", "Session Tag"].includes(props.data.name)
   );
 };
 
@@ -1086,7 +1091,7 @@ const labelMap = (inputType?: string) => {
     "Average Order Value": "Condition",
     "Create Custom Filter": "Condition",
     "Session Tag": "Session Tag Name",
-    Partners: "Select Partners Name",
+    "A/B Tests": "Select A/B Testing Tool",
   };
   return map[inputType || ""];
 };
@@ -1100,7 +1105,7 @@ const placeholderMap = (inputType?: string) => {
     "Average Order Value": "Equals",
     "Create Custom Filter": "Equals",
     "Session Tag": "Select",
-    Partners: "Select",
+    "A/B Tests": "Select",
   };
   return map[inputType || ""];
 };
@@ -1113,7 +1118,7 @@ const SecondLabelMap = (inputType?: string) => {
     "Average Order Value": "Value",
     "Create Custom Filter": "Value",
     "Session Tag": "Tag Value",
-    Partners: "Select Experiments",
+    "A/B Tests": "Select Experiments",
   };
   return map[inputType || ""];
 };
@@ -1126,7 +1131,7 @@ const SecondPlaceholderMap = (inputType?: string) => {
     "Average Order Value": "0.00",
     "Create Custom Filter": "Enter value",
     "Session Tag": "Multiselect",
-    Partners: "Select",
+    "A/B Tests": "Select",
   };
   return map[inputType || ""];
 };
@@ -1163,7 +1168,7 @@ const fetchSegmentData = async () => {
         sectionTags.value = result;
         allDropdownItems.value = Object.keys(sectionTags.value || {});
         dropdownItems.value = allDropdownItems.value;
-      } else if (props.data?.name === "Partners") {
+      } else if (props.data?.name === "A/B Tests") {
         partners.value = result;
         updateValuesForEachKey(partners.value?.experiments);
         const keys = partners.value?.partners;
@@ -1220,7 +1225,7 @@ const makeRequestFor = (filter?: string): boolean => {
     "Traffic Source",
     "Session Tag",
     "Viewed Page",
-    "Partners",
+    "A/B Tests",
   ];
   return filter ? allowRequestList.includes(filter) : false;
 };
