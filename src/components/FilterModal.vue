@@ -820,10 +820,10 @@ const next = () => {
           )}`
         ),
       };
-      console.log(
-        "return data: ",
-        currentData.default == "variant" ? returnObj : ""
-      );
+      // console.log(
+      //   "return data: ",
+      //   currentData.default == "variant" ? returnObj : ""
+      // );
 
       emit("item-selected", {
         name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,

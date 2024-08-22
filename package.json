@@ -37,21 +37,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "heatmap-filter": "^1.1.2",
-    "sass": "^1.62.1",
+    "heatmap-filter": "^1.8.9",
+    "sass": "^1.77.8",
     "vite-plugin-css-injected-by-js": "^3.5.1"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue": "^4.6.2",
     "@vue/tsconfig": "^0.5.1",
     "path": "^0.12.7",
-    "typescript": "^5.4.5",
-    "vite": "^4.3.9",
+    "typescript": "^5.5.4",
+    "vite": "^4.5.3",
     "vite-plugin-dts": "^2.3.0",
-    "vue": "^3.4.27",
-    "vue-tsc": "^1.4.2"
+    "vue": "^3.4.38",
+    "vue-tsc": "^1.8.26"
   }
 }

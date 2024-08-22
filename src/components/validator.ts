@@ -42,7 +42,7 @@ export default function validator(
   }
 
   // for Total Pages Visited
-  if (props?.name === "Partners") {
+  if (props?.name === "A/B Tests") {
     const validCondition = !!data[0].default;
     const validValue = !!data[0].value;
     valid = validCondition && validValue;
