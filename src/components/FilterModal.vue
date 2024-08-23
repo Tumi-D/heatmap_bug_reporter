@@ -749,7 +749,7 @@ const next = () => {
       definition: returnData,
       idSite: getItemFromUrl("idSite"),
       deviceType: getItemFromUrl("deviceType"),
-      idSiteHsr: getItemFromUrl("idSiteHsr"),
+      idSiteHsr: getItemFromUrl("subcategory"),
       filterId: props.data.id,
     });
 

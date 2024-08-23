@@ -457,7 +457,7 @@ const fetchCustomFilters = async () => {
   const body = JSON.stringify({
     idSite: getItemFromUrl("idSite"),
     deviceType: getItemFromUrl("deviceType"),
-    idSiteHsr: getItemFromUrl("idSiteHsr"),
+    idSiteHsr: getItemFromUrl("subcategory"),
   });
 
   const requestOptions = { method: "POST", body };
