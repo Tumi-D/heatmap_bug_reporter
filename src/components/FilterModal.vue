@@ -828,7 +828,7 @@ const next = () => {
       emit("item-selected", {
         name: `${props.data?.name}: ${allData.value[0].default}=${allData.value[0].value}`,
         definition: encodeURI(returnData),
-        rawValues: currentData.default == "variant" ? returnObj : "",
+        rawValues:  ["variant", "view"].includes(currentData.default) ? returnObj : "",
       });
       props.closeSelectModal();
       return;
