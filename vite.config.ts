@@ -9,8 +9,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
-      name: "HeatmapFilter",
-      fileName: "heatmap-filter",
+      name: "BugReportButton",
+      fileName: "heatmap-bug-reporter",
     },
     rollupOptions: {
       external: ["vue"],

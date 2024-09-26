@@ -39,7 +39,6 @@
   "dependencies": {
     "sass": "^1.77.8",
     "vite-plugin-css-injected-by-js": "^3.5.1",
-    "@intercom/messenger-js-sdk": "0.0.13",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
     "html2canvas": "^1.4.1"

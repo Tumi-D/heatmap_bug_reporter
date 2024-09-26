@@ -27,7 +27,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import BugReportButton from './BugReportButton.vue'; // Only import the button
-import Intercom from '@intercom/messenger-js-sdk';
 
 export default defineComponent({
   name: "BugReportWidget",
@@ -49,37 +48,6 @@ export default defineComponent({
   mounted() {
     this.loading = false;
 
-    // Initialize Intercom with necessary settings
-    Intercom({
-      app_id: 'kf5wa5hv',
-      user_id: 1, // Replace with your dynamic user ID
-      name: 'Chris Debrah', // Replace with the user's name
-      email: 'chris.debrah@yahoo.com', // Replace with the user's email
-      created_at: 1704067200, // Replace with the user's sign-up timestamp
-    });
-
-    // Debugging: Log when Intercom is shown
-    Intercom('onShow', () => {
-      console.log('Intercom is shown');
-      alert('Bug reporting');
-    });
-
-    // Debugging: Log when Intercom is hidden
-    Intercom('onHide', () => {
-      console.log('Intercom is hidden');
-      alert('Bug reporting');
-    });
-
-    // Track an event when a custom action is triggered
-    Intercom('trackEvent', 'bug_reporting', {
-      source: 'Intercom Messenger',
-    });
-
-    // Check for the 'trigger_bug_report' event and handle it
-    Intercom('on', 'bug_reporting', (data: any) => {
-      console.log(data);
-      alert('Bug reporting');
-    });
   },
 });
 </script>
