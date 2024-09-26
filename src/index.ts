@@ -1,3 +1,2 @@
-import HeatmapFilter from "./components/HeatmapFilter.vue";
-
-export { HeatmapFilter };
+import BugReportButton from "./components/BugReportButton.vue";
+export { BugReportButton };
